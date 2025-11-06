@@ -1,0 +1,76 @@
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { getAuthUser } from "@/lib/auth"
+import { hasActiveSubscription } from "@/lib/subscription"
+import { updateStockSchema } from "@/lib/validations/stock"
+import { redactStock } from "@/lib/redact"
+
+ 
+
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  try {
+    const auth = await getAuthUser()
+
+    const stock = await prisma.stock.findUnique({ where: { id: params.id } })
+    if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    const subscribed = !auth ?false: auth.role === "ADMIN" || auth.role === "ACCOUNTANT" ? true : await hasActiveSubscription(auth.id)
+    return NextResponse.json({ stock: redactStock(stock as any, subscribed) })
+  } catch (err) {
+    console.error("/api/stocks/[id] GET error", err)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const auth = await getAuthUser()
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const existing = await prisma.stock.findUnique({ where: { id: params.id } })
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    const role = (auth.role as string | undefined) ?? ""
+    if (!['ADMIN','ACCOUNTANT'].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    }
+
+    const parsed = updateStockSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 })
+    }
+
+    const updated = await prisma.stock.update({ where: { id: params.id }, data: parsed.data })
+    const subscribed = await hasActiveSubscription(auth.id)
+    return NextResponse.json({ stock: redactStock(updated as any, subscribed) })
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return NextResponse.json({ error: "Symbol already exists" }, { status: 409 })
+    }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
+}
+
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+  try {
+    const auth = await getAuthUser()
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const existing = await prisma.stock.findUnique({ where: { id: params.id } })
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    const role = (auth.role as string | undefined) ?? ""
+    if (!['ADMIN','ACCOUNTANT'].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    await prisma.stock.delete({ where: { id: params.id } })
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error("/api/stocks/[id] DELETE error", err)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
+}

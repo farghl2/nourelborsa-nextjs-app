@@ -1,15 +1,154 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for Postgres
+// You can add your models below. This starts with a minimal setup.
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  ACCOUNTANT
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String?
+  email          String?         @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  role           Role            @default(USER)
+  purificationCount Int?           @default(0)     // عدد مرات استخدام ميزة التطهير
+  accounts       Account[]
+  sessions       Session[]
+  subscriptions  Subscription[]
+  payments       Payment[]                    
+  createdPlans   SubscriptionPlan[]             @relation("UserCreatedPlans")
+  createdStocks  Stock[]                        @relation("UserCreatedStocks")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model SubscriptionPlan {
+  id           String           @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  durationDays Int
+  features     Json?
+  purificationLimit Int?           @default(0)  //  عدد المرات المسموح بها لاستخدام ميزة "نسبة التطهير
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  createdById  String?
+  createdBy    User?             @relation("UserCreatedPlans", fields: [createdById], references: [id]) // ✅ رابط صحيح
+  subscriptions Subscription[]
+  active Boolean @default(true)
+}
+
+
+model Subscription {
+  id             String            @id @default(cuid())
+  userId         String
+  planId         String
+  status         SubscriptionStatus @default(ACTIVE)
+  startDate      DateTime           @default(now())
+  endDate        DateTime?
+  renewedByAdmin Boolean            @default(false) // 👈 لإدارة التجديد اليدوي
+  paymentId      String?
+  user           User               @relation(fields: [userId], references: [id])
+  plan           SubscriptionPlan   @relation(fields: [planId], references: [id])
+  payment        Payment?           @relation(fields: [paymentId], references: [id])
+}
+
+model Payment {
+  id             String    @id @default(cuid())
+  userId         String
+  amount         Float
+  currency       String     @default("usd")
+  status         PaymentStatus
+  transactionId  String?
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+  subscription   Subscription[]
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  PENDING
+  FAILED
+}
+
+model Stock {
+  id                               String    @id @default(cuid())
+  name                             String
+  symbol                           String    @unique
+  description                      String?
+  createdById                      String
+  active                           Boolean @default(true)
+  createdBy                        User      @relation("UserCreatedStocks", fields: [createdById], references: [id])
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime  @updatedAt
+  companyActivity                  String?   // نشاط الشركة
+  prohibitedRevenuePercentage      Float?    // نسبة الإيرادات المحرمة
+  interestBearingLoansPercentage   Float?    // نسبة القروض الربوية
+  interestBearingDepositsPercentage Float?   // نسبة الإيداعات الربوية
+  assetsPercentage                 Float?    // نسبة الأصول
+  totalAssets                      Float?    // إجمالي الأصول
+  marketCapitalization             Float?    // القيمة السوقية
+  recommendation                   Boolean   @default(false) // ننصح بالاحتفاظ
+  durationDays                     Int?       // المدة
+  returnOnPrice                    Float?    // العائد على السعر
+  fairValue                        Float?    // القيمة العادلة
+  earningsPerShare                 Float?    // ربحية السهم
+  expectedFairValueNextYear        Float?    // متوقع للقيمة العادلة للسنة الجديدة
+  expectedEarningsPerShare         Float?    // متوقع ربحية السهم
+  purificationPercentage           Float?    // نسبة التطهير
 }
