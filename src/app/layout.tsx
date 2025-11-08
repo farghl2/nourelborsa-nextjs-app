@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
+import Header from "@/components/features/Header";
 
 const geistSans = Cairo({
   variable: "--cairo",
   subsets: ["arabic"],
 });
-
-
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,8 +25,8 @@ export default function RootLayout({
         className={`${geistSans.variable}  antialiased`}
       >
         <ReactQueryProvider>
-        {children}
-
+          <Header />
+          {children}
         </ReactQueryProvider>
       </body>
     </html>

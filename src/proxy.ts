@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { verifyJwt } from "@/lib/jwt"
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // Apply only to API routes
