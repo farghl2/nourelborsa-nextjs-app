@@ -19,7 +19,7 @@ export default function Header() {
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(headerData[0].title);
     return (
-        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
+        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b rounded-b-lg">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8" dir="rtl">
                 <div className="flex h-16 items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export default function Header() {
                         <Link href="/"
 
                             className="text-xl font-semibold tracking-tight">
-                            <Image src="/semi-logo.jpg" alt="Logo" width={42} height={42} />
+                            <Image src="/ful-logo.png" alt="Logo" width={80} height={80} />
                         </Link>
                     </div>
 

@@ -3,6 +3,8 @@ import { Cairo } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/components/ReactQueryProvider";
 import Header from "@/components/features/Header";
+import WhatsAppBtn from "@/components/atoms/WhatsAppBtn";
+import ScrollUpButton from "@/components/atoms/ScrollUpButton";
 
 const geistSans = Cairo({
   variable: "--cairo",
@@ -27,6 +29,8 @@ export default function RootLayout({
         <ReactQueryProvider>
           <Header />
           {children}
+          <WhatsAppBtn phoneNumber={123456789} />
+          <ScrollUpButton />
         </ReactQueryProvider>
       </body>
     </html>
