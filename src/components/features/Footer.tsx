@@ -9,7 +9,7 @@ const footerLinks = [
   { title: "الخدمات", link: "/#services" },
   { title: "الأسعار", link: "/#pricing" },
   { title: "من نحن", link: "/#about" },
-  { title: "تواصل معنا", link: "/#contact" },
+  { title: "Nour AI", link: "/#" },
 ];
 
 export default function Footer() {
