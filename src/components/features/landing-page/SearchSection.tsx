@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
-
-import { Button } from '../ui/button'
+import FadeInUP from '@/animations/FadeInUP'
+import { Button } from '../../ui/button'
 
 import { ChevronsUpDown } from "lucide-react"
 
@@ -26,8 +26,14 @@ const SearchSection = () => {
             <div className='max-w-6xl mx-auto h-[500px] flex flex-col gap-20 justify-center'>
 
                 <div className='text-center '>
+                    <FadeInUP>
+
                     <h4 className='text-3xl sm:text-5xl text-white font-bold'>ابحث عن سهمك المفضل</h4>
+                    </FadeInUP>
+                    <FadeInUP>
+
                     <p className='text-sm sm:text-base mt-2 text-white/80'>ابحث عن الاسهم لمعرفة تفاصيلها المالية والشرعية</p>
+                    </FadeInUP>
 
                 </div>
                 <div dir='rtl' className='flex-1 flex flex-col gap-2 items-center justify-start w-full'>
@@ -60,7 +66,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from '@/lib/utils'
-import { Badge } from '../ui/badge'
+import { Badge } from '../../ui/badge'
 
 type Option = {
     name: string

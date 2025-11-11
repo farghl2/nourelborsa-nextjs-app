@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getAuthUser } from "@/lib/auth"
 import { hasActiveSubscription } from "@/lib/subscription"
@@ -6,12 +6,12 @@ import { updateStockSchema } from "@/lib/validations/stock"
 import { redactStock } from "@/lib/redact"
 
  
-
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const auth = await getAuthUser()
 
-    const stock = await prisma.stock.findUnique({ where: { id: params.id } })
+    const { id } = await context.params
+    const stock = await prisma.stock.findUnique({ where: { id } })
     if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     const subscribed = !auth ?false: auth.role === "ADMIN" || auth.role === "ACCOUNTANT" ? true : await hasActiveSubscription(auth.id)
@@ -22,15 +22,16 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const auth = await getAuthUser()
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const existing = await prisma.stock.findUnique({ where: { id: params.id } })
+    const { id } = await context.params
+    const existing = await prisma.stock.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
     const role = (auth.role as string | undefined) ?? ""
-    if (!['ADMIN','ACCOUNTANT'].includes(role)) {
+    if (!["ADMIN","ACCOUNTANT"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -44,7 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 })
     }
 
-    const updated = await prisma.stock.update({ where: { id: params.id }, data: parsed.data })
+    const updated = await prisma.stock.update({ where: { id }, data: parsed.data })
     const subscribed = await hasActiveSubscription(auth.id)
     return NextResponse.json({ stock: redactStock(updated as any, subscribed) })
   } catch (err: any) {
@@ -55,19 +56,20 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const auth = await getAuthUser()
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const existing = await prisma.stock.findUnique({ where: { id: params.id } })
+    const { id } = await context.params
+    const existing = await prisma.stock.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
     const role = (auth.role as string | undefined) ?? ""
-    if (!['ADMIN','ACCOUNTANT'].includes(role)) {
+    if (!["ADMIN","ACCOUNTANT"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    await prisma.stock.delete({ where: { id: params.id } })
+    await prisma.stock.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error("/api/stocks/[id] DELETE error", err)

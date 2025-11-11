@@ -5,6 +5,7 @@ import ReactQueryProvider from "@/components/ReactQueryProvider";
 import Header from "@/components/features/Header";
 import WhatsAppBtn from "@/components/atoms/WhatsAppBtn";
 import ScrollUpButton from "@/components/atoms/ScrollUpButton";
+import Footer from "@/components/features/Footer";
 
 const geistSans = Cairo({
   variable: "--cairo",
@@ -31,6 +32,7 @@ export default function RootLayout({
           {children}
           <WhatsAppBtn phoneNumber={123456789} />
           <ScrollUpButton />
+          <Footer />
         </ReactQueryProvider>
       </body>
     </html>
