@@ -39,10 +39,27 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role ?? token.role
       } else if (token?.email) {
         // ensure role present for OAuth sessions
-        const dbUser = await prisma.user.findUnique({ where: { email: token.email } })
+        const dbUser = await prisma.user.findUnique({ 
+          where: { email: token.email },
+          include: {
+            subscriptions: {
+              where: { status: "ACTIVE" },
+              include: {
+                plan: {
+                  select: { name: true, allowedStocks: true }
+                }
+              }
+            }
+          }
+        })
         if (dbUser) {
           token.id = dbUser.id
           token.role = dbUser.role
+          // Add plan information
+          const activeSubscription = dbUser.subscriptions[0]
+          token.plan = activeSubscription?.plan?.name || "Free"
+          token.status = activeSubscription ? "Active" : "Inactive"
+          token.allowedStocks = activeSubscription?.plan?.allowedStocks || false
         }
       }
       return token
@@ -51,6 +68,9 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role
+        ;(session.user as any).plan = token.plan || "Free"
+        ;(session.user as any).status = token.status || "Inactive"
+        ;(session.user as any).allowedStocks = token.allowedStocks || false
       }
       return session
     },

@@ -33,7 +33,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <motion.div className="order-1 lg:order-2" initial={{x:-200, opacity: 0 }} whileInView={{x:0, opacity: 1 }} transition={{duration: .3, ease: 'easeIn'}} >
+          <motion.div className="order-1 lg:order-2" initial={{x:-200, opacity: 0 }} viewport={{once:true}} whileInView={{x:0, opacity: 1 }} transition={{duration: .3, ease: 'easeIn'}} >
             <div className="mx-auto flex items-center bg-secondary  justify-center rounded-full min-h-[290px] max-h-[520px] max-w-[520px] lg:max-w-none">
               <Image src={'/hero.svg'} alt="Logo" width={600} height={600} />
 

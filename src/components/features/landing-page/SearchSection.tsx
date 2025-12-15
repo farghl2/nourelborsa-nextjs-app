@@ -7,38 +7,42 @@ import { ChevronsUpDown } from "lucide-react"
 
 
 
-const stocks = [
-    { name: 'tesla', code: 'TSLA' },
-    { name: 'apple', code: 'AAPL' },
-    { name: 'amazon', code: 'AMZN' },
-    { name: 'google', code: 'GOOGL' },
-    { name: 'microsoft', code: 'MSFT' },
-    { name: 'facebook', code: 'META' },
-    { name: 'twitter', code: 'TWTR' },
-    { name: 'snapchat', code: 'SNAP' },
-    { name: 'instagram', code: 'INSTAGRAM' },
-    { name: 'whatsapp', code: 'WATSON' },
-]
+
+
+const TITLE  ='اجعل نور مستشارك المالي و الشرعي في البورصة'
 const SearchSection = () => {
-
+    const isMobile = useIsMobile()
+    const {stocks, loading} = useAdminStocks();
+    const router =useRouter();
+    if(loading) return <Loading />
     return (
-        <section className='py-12 bg-secondary rounded-lg'>
-            <div className='max-w-6xl mx-auto h-[500px] flex flex-col gap-20 justify-center'>
+        <section className='relative overflow-hidden py-12 px-3'
+        
+        style={{backgroundImage:`url(${isMobile?'mobile.jpg':'logo-nourborsa.png'})`, backgroundRepeat:'no-repeat',backgroundSize: 'cover',
+  backgroundPosition: 'center'}}
+            >
+            <div className='absolute inset-0 -z-10' />
+            <div className='max-w-6xl mx-auto h-[400px] sm:h-[500px] flex flex-col gap-14 justify-center items-center'
+      >
+                {/* <div className='relative flex items-center justify-center'>
+                    <div className='absolute -z-10 size-[500px] sm:size-[1000px] rounded-full bg-secondary/20 blur-3xl' />
+                    <div className='absolute -z-10 size-[1200px] sm:size-[2200px] bg-[radial-gradient(circle_at_center,theme(colors.secondary/_40)_0%,transparent_60%)] blur-2xl' />
+                    <div className='relative'>
+                       <Image src={'/ful-logo.png' } alt="" width={200} height={200} className='w-[200px] sm:w-[400px]'/>
+                    </div>
+                </div> */}
 
-                <div className='text-center '>
+                <div className='text-center'>
                     <FadeInUP>
-
-                    <h4 className='text-3xl sm:text-5xl text-white font-bold'>ابحث عن سهمك المفضل</h4>
+                        <h4 className='text-xl sm:text-3xl font-bold'>{TITLE}</h4>
                     </FadeInUP>
                     <FadeInUP>
-
-                    <p className='text-sm sm:text-base mt-2 text-white/80'>ابحث عن الاسهم لمعرفة تفاصيلها المالية والشرعية</p>
+                        <p className='text-sm sm:text-base mt-2 text-muted-foreground'>ابحث عن الاسهم لمعرفة تفاصيلها المالية والشرعية</p>
                     </FadeInUP>
-
                 </div>
-                <div dir='rtl' className='flex-1 flex flex-col gap-2 items-center justify-start w-full'>
 
-                    <CustomCombobox options={stocks} placeholder='ابحث عن سهمك المفضل ....' searchPlaceholder='ابحث ...' onChange={(value) => console.log(value)} />
+                <div dir='rtl' className='flex-1 flex flex-col gap-2 items-center justify-end w-full'>
+                    <CustomCombobox options={stocks} placeholder='ابحث عن سهمك المفضل ....' searchPlaceholder='ابحث ...' onChange={(value) =>router.push(`/stocks/${value}`)} />
                 </div>
             </div>
         </section>
@@ -67,14 +71,21 @@ import {
 } from "@/components/ui/popover"
 import { cn } from '@/lib/utils'
 import { Badge } from '../../ui/badge'
+import Image from 'next/image'
+import { AdminStockRow, useAdminStocks } from '@/hooks/useAdminStocks'
+import Loading from '@/app/loading'
+import { useRouter } from 'next/navigation'
+import { useIsMobile } from '@/hooks/use-mobile'
+
 
 type Option = {
+    id:string,
     name: string
     code: string
 }
 
 interface CustomComboboxProps {
-    options: Option[]
+    options: AdminStockRow[]
     placeholder?: string
     searchPlaceholder?: string
     emptyText?: string
@@ -123,7 +134,7 @@ function CustomCombobox({
                             {options.map((option) => (
                                 <CommandItem
                                     key={option.name}
-                                    value={option.name}
+                                    value={option.id}
                                     onSelect={handleSelect}
 
                                     className="w-full flex justify-between items-center gap-8 py-2">
@@ -134,7 +145,7 @@ function CustomCombobox({
 
                                     </span>
 
-                                    <Badge variant="default">{option.code}</Badge>
+                                    <Badge variant="default">{option.symbol}</Badge>
 
                                 </CommandItem>
                             ))}

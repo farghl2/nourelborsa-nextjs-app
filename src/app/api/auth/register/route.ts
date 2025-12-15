@@ -34,11 +34,11 @@ export async function POST(req: Request) {
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     })
 
-    const code = generateVerificationCode()
-    await saveVerificationCode(email, code)
-    await sendVerificationCodeEmail(email, code)
+    // const code = generateVerificationCode()
+    // await saveVerificationCode(email, code)
+    // await sendVerificationCodeEmail(email, code)
 
-    return NextResponse.json({ message: "تم إنشاء الحساب. تم إرسال رمز التحقق إلى بريدك الإلكتروني." }, { status: 201 })
+    return NextResponse.json({ message: "تم إنشاء الحساب. ." }, { status: 201 })
   } catch (err) {
     console.error("/api/auth/register error", err)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

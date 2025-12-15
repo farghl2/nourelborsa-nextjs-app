@@ -11,7 +11,9 @@ export async function GET(_req: NextRequest, context: { params: Promise<{ id: st
     const auth = await getAuthUser()
 
     const { id } = await context.params
+
     const stock = await prisma.stock.findUnique({ where: { id } })
+
     if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     const subscribed = !auth ?false: auth.role === "ADMIN" || auth.role === "ACCOUNTANT" ? true : await hasActiveSubscription(auth.id)

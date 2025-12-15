@@ -22,17 +22,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
-    if (!user.emailVerified) {
-      return NextResponse.json({ error: "Email not verified. Please verify your email to continue." }, { status: 403 })
-    }
+    // if (!user.emailVerified) {
+    //   return NextResponse.json({ error: "Email not verified. Please verify your email to continue." }, { status: 403 })
+    // }
 
     const ok = await verifyPassword(password, user.password)
+ 
     if (!ok) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
     const { id, name, role, createdAt } = user
     const token = await signJwt({ sub: id, email: user.email, role })
+    console.log(token)
     const res = NextResponse.json({ user: { id, name, email: user.email, role, createdAt } }, { status: 200 })
     res.cookies.set("auth_token", token, {
       httpOnly: true,

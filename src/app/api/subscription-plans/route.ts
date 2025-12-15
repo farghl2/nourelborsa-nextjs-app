@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
     }
+    console.log("data", body)
 
     const parsed = createSubscriptionPlanSchema.safeParse(body)
     if (!parsed.success) {
@@ -28,7 +29,6 @@ export async function POST(req: Request) {
     }
 
     const auth = await getAuthUser().catch(() => null)
-
     const plan = await prisma.subscriptionPlan.create({
       data: {
         name: parsed.data.name,

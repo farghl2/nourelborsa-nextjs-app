@@ -7,7 +7,6 @@ export function redactStock<T extends RedactableStock>(stock: T, subscribed: boo
     recommendation: null,
     durationDays: null,
     returnOnPrice: null,
-    fairValue: null,
     earningsPerShare: null,
     expectedFairValueNextYear: null,
     expectedEarningsPerShare: null,

@@ -12,5 +12,5 @@ export async function sendMessageToBo(formData: string) {
         return {message:'يوجد خطاء, حاول مرة اخري', status:res.status, success:false}
     }
 
-    return {message:'طلبك وصل بنجاح! هنبدأ نجهزه فورًا  ❤️', status:res.status, success:true}
+    return {message:'تم تسجيل اجابتك, سنتواصل معك في اقرب وقت', status:res.status, success:true}
 }

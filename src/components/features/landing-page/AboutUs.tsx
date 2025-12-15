@@ -1,14 +1,15 @@
 
 import Image from 'next/image'
 import FadeInUP from '@/animations/FadeInUP'
+import { ABOUTUS } from '@/lib/data/const-data';
 
-const OurStorySection = () => {
+const AboutUs = () => {
   return (
     <section className='py-12 px-2  rounded-lg'>
       <div className='max-w-6xl mx-auto '>
 
         <div className='text-center mb-8 sm:mb-16'>
-          <h4 className='text-2xl sm:text-4xl text-black/90 font-bold'>قصتنا في عالم البورصة</h4>
+          <h4 className='text-2xl sm:text-4xl text-black/90 font-bold'> من نحن</h4>
           <div className='h-0.5 w-[20%] bg-primary mx-auto mt-4 rounded-xl' />
         </div>
         <div className=' flex  flex-col-reverse lg:flex-row gap-12 items-center lg:items-start lg:justify-between'>
@@ -26,10 +27,7 @@ const OurStorySection = () => {
             <p
 
               className='text-center lg:text-end text-lg sm:text-xl text-black/90 leading-7 sm:leading-9 max-w-xl'>
-              نحن نقدم لك الحلول المالية و الشرعية
-              التي تجعل بامكان التداول بطريقة شرعية وتحقيق نتايجايجابية بخدمتنا المالة و الفنية
-              نحن ملتزمون بتقديم خدمة عالية الجودة تضمن لك الفهم الكامل للخيارات المتاحة لتحقيق أهدافك المالية والشرعية
-              يهدف فريقنا من الخبراء إلى توفير حلول مبتكرة وموثوقة تساعدك في اتخاذ قرارات مستنيرة.
+              {ABOUTUS}
             </p>
           </FadeInUP>
         </div>
@@ -38,4 +36,4 @@ const OurStorySection = () => {
   )
 }
 
-export default OurStorySection
+export default AboutUs;

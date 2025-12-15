@@ -1,14 +1,11 @@
 import { cn } from '@/lib/utils'
 import Link from 'next/link';
 
-import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa6";
-import { Button } from '../ui/button';
 
-const SOCIALCARDS =[
-    {icon:FaFacebookF, url:'/'},
-    {icon:FaInstagram, url:'/'},
-    {icon:FaTiktok, url:'/'},
-]
+import { Button } from '../ui/button';
+import { SOCIALCARDS } from '@/lib/data/const-data';
+
+
 
 const SocialCards = () => {
   return (

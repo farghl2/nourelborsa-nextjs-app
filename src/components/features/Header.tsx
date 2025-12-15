@@ -1,23 +1,17 @@
 "use client";
-import { ChartNetwork, ChartSpline, DollarSign, Home, Info, Menu, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { headerData, PHONE } from "@/lib/data/const-data";
+import { useSession, signOut } from "next-auth/react";
 
-
-const PHONE = "01204862933"
-const headerData = [
-    { title: "الرئيسية", link: "/", icon: Home },
-    { title: "الخدمات", link: "/#services", icon: ChartSpline },
-    { title: "الأسعار", link: "/#pricing", icon: DollarSign },
-    { title: "من نحن", link: "/#about", icon: Info },
-    { title: "Nour AI", link: "/#", icon:ChartNetwork   },
-]
 
 export default function Header() {
-    const [open, setOpen] = useState(false);
-    const [active, setActive] = useState(headerData[0].title);
+  
+    const pathName = usePathname()
+    const [active, setActive] = useState(pathName);
+    const { status } = useSession()
     return (
         <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60 border-b rounded-b-lg">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8" dir="rtl">
@@ -35,8 +29,8 @@ export default function Header() {
                         {headerData.map((item) => (
                             <Link key={item.title}
                                 href={item.link}
-                                onClick={() => setActive(item.title)}
-                                className={`font-medium link ${item.title === active ? "text-primary font-bold active" : ""}`} aria-label={item.title}>{item.title}</Link>
+                                onClick={() => setActive(item.link)}
+                                className={`font-medium link ${item.link === active ? "text-primary font-bold active" : ""}`} aria-label={item.title}>{item.title}</Link>
                         ))}
                     </nav>
                     <div className="hidden sm:flex items-center gap-4 text-sm" dir="rtl">
@@ -44,11 +38,20 @@ export default function Header() {
                             <Phone size={"18"} />
                             <span>{PHONE}</span>
                         </a>
-                        <Button asChild variant="default" className="hidden sm:inline-flex">
-                            <Link href={'/login'}>
-                                تسجيل الدخول
+                        {status=== "authenticated" ? (
+                          <Button asChild variant="default" className="hidden sm:inline-flex">
+                            <Link href={'/profile'} className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              <span>الملف الشخصي</span>
                             </Link>
-                        </Button>
+                          </Button>
+                        ) : (
+                          <Button asChild variant="default" className="hidden sm:inline-flex">
+                            <Link href={'/login'}>
+                              تسجيل الدخول
+                            </Link>
+                          </Button>
+                        )}
                     </div>
                     <div className="block sm:hidden">
 
@@ -75,6 +78,8 @@ import {
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import SocialCards from "../atoms/SocilaCards";
+import { Menu, Phone, User, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 
 const Sidebar = () => {
@@ -98,29 +103,52 @@ const Sidebar = () => {
   );
 };
 
-const MobilleNav = () => (
-  <nav>
-    <ul className="flex items-center w-full  flex-col justify-center gap-1">
-      {headerData.map((item,index) => (
-        <li key={index} className="w-full">
-          <SheetClose asChild>
-            <Link
-              className="w-full px-6 py-4  flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30"
-              href={item.link}
-              
-            >
-              <item.icon className="size-5" />
-              {item.title}
-            </Link>
-          </SheetClose>
-          <Separator className="bg-primary h-1" />
-        </li>
-      ))}
-    </ul>
-    <div className="mt-5 px-6 ">
-      <h3 className="text-xl font-semibold text-primary text-end">تابعنا علي </h3>
-    <SocialCards />
-
-    </div>
-  </nav>
-);
+const MobilleNav = () => {
+  const { status } = useSession()
+  return (
+    <nav>
+      <ul className="flex items-center w-full  flex-col justify-center gap-1">
+        {status === "authenticated" && (
+          <li className="w-full">
+            <SheetClose asChild>
+              <Link
+                className="w-full px-6 py-4 flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30"
+                href="/profile"
+              >
+                <User className="size-5" />
+                الملف الشخصي
+              </Link>
+            </SheetClose>
+            <Separator className="bg-primary h-1" />
+          </li>
+        )}
+        {headerData.map((item,index) => (
+          <li key={index} className="w-full">
+            <SheetClose asChild>
+              <Link
+                className="w-full px-6 py-4  flex items-center justify-between cursor-pointer text-[16px] font-semibold hover:bg-accent/30"
+                href={item.link}
+              >
+                <item.icon className="size-5" />
+                {item.title}
+              </Link>
+            </SheetClose>
+            <Separator className="bg-primary h-1" />
+          </li>
+        ))}
+      </ul>
+      {status === "authenticated" && (
+        <div className="mt-4 px-6 w-full">
+          <Button className="w-full flex items-center gap-2" variant="outline" onClick={() => signOut({ callbackUrl: "/" })}>
+            <LogOut className="h-4 w-4" />
+            تسجيل الخروج
+          </Button>
+        </div>
+      )}
+      <div className="mt-5 px-6 ">
+        <h3 className="text-xl font-semibold text-primary text-end">تابعنا علي </h3>
+        <SocialCards />
+      </div>
+    </nav>
+  );
+};

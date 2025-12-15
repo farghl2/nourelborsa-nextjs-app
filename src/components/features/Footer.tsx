@@ -2,15 +2,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import SocialCards from "../atoms/SocilaCards";
+import { headerData } from "@/lib/data/const-data";
 import FadeInUP from "@/animations/FadeInUP";
 
-const footerLinks = [
-  { title: "الرئيسية", link: "/" },
-  { title: "الخدمات", link: "/#services" },
-  { title: "الأسعار", link: "/#pricing" },
-  { title: "من نحن", link: "/#about" },
-  { title: "Nour AI", link: "/#" },
-];
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -21,15 +15,15 @@ export default function Footer() {
 
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div className="flex flex-col gap-3 items-start md:items-end text-end">
+          <div className="flex flex-col gap-3 items-start md:items-start text-start">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image src="/ful-logo.png" alt="Logo" width={80} height={80} />
             </Link>
-            <p className="text-sm text-white/90">نقدّم حلولاً رقمية موثوقة لتطوير أعمالك.</p>
+            <p className="text-sm text-white/90">نحن نقدم لك الحلول المالية و الشرعية التي تجعل بامكان التداول بطريقة شرعية</p>
           </div>
 
           <nav className="flex flex-col gap-2 items-start md:items-center text-sm text-white">
-            {footerLinks.map((item) => (
+            {headerData.map((item) => (
               <Link key={item.title} href={item.link} className="link font-medium hover:text-primary">
                 {item.title}
               </Link>
@@ -44,10 +38,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-6 border-t rounded-t-lg flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/90">
           <p className="order-2 sm:order-1">© {year} جميع الحقوق محفوظة.</p>
-          {/* <div className="order-1 sm:order-2 flex items-center gap-4">
-            <Link href="/privacy" >الخصوصية</Link>
-            <Link href="/terms" >الشروط</Link>
-          </div> */}
+        
         </div>
         </FadeInUP>
       </div>

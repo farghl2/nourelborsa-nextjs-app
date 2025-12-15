@@ -43,6 +43,13 @@ export async function POST(req: Request) {
           endDate: new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000),
         },
       })
+
+      // Update user's purificationCount to the plan's purificationLimit
+      await prisma.user.update({
+        where: { id: payment.userId },
+        data: { purificationCount: plan.purificationLimit ?? 0 }
+      })
+
       return NextResponse.json({ payment: updatedPayment, subscription: sub }, { status: 200 })
     }
 
