@@ -38,6 +38,9 @@ import { Button } from "@/components/ui/button";
 import { useAdminPlans } from "@/hooks/useAdminPlans";
 import Loading from "@/app/loading";
 import { AdminPlan } from "@/lib/services/plans";
+import { toast } from "sonner";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export type PricePlan = {
   title: string;
@@ -47,7 +50,103 @@ export type PricePlan = {
   highlighted?: boolean;
 };
 
- function PricePlanCard({ name, active, durationDays, price, description, features, purificationLimit}: AdminPlan) {
+ function PricePlanCard({ id, name, active, durationDays, price, description, features, purificationLimit}: AdminPlan) {
+  const [isPaying, setIsPaying] = useState(false);
+  const router = useRouter();
+
+  const handlePay = async () => {
+    try {
+      setIsPaying(true);
+      
+      // 1. Create pending payment
+      const paymentRes = await fetch("/api/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: id, provider: "paysky" }),
+      });
+
+      if (!paymentRes.ok) {
+        const errorData = await paymentRes.json().catch(() => ({}));
+        if (paymentRes.status === 401) {
+          toast.error("يرجى تسجيل الدخول أولاً");
+          router.push("/login");
+          return;
+        }
+        throw new Error(errorData.error || "فشل في بدء عملية الدفع");
+      }
+
+      const { payment } = await paymentRes.json();
+      
+      // PaySky expects amount in piasters (e.g., 100 EGP = 10000). 
+      const amount = Math.round(price * 100).toString();
+      
+      const merchantReference = payment.merchantReference;
+
+      // 2. Get Secure Hash
+      const hashRes = await fetch("/api/paysky/hash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, merchantReference }),
+      });
+
+      if (!hashRes.ok) throw new Error("فشل في تهيئة بوابة الدفع");
+
+      const data = await hashRes.json();
+
+      // 3. Configure and Show Lightbox
+      // @ts-ignore
+      if (typeof Lightbox === 'undefined') {
+        throw new Error("بوابة الدفع غير جاهزة، يرجى المحاولة مرة أخرى");
+      }
+
+      // @ts-ignore
+      Lightbox.Checkout.configure = {
+        MID: data.MID,
+        TID: data.TID,
+        AmountTrxn: amount,
+        SecureHash: data.SecureHash,
+        MerchantReference: merchantReference,
+        TrxDateTime: data.TrxDateTime,
+        CurrencyCode: "818", 
+        AppType: "Web",
+        DefaultRoute: "Main",
+        ReturnURL: window.location.origin + "/api/webhooks/paysky", 
+
+        completeCallback: (response: any) => {
+          console.log("Payment Success", response);
+          toast.success("تمت عملية الدفع بنجاح");
+          router.push(`/payments/success?ref=${merchantReference}`);
+        },
+        errorCallback: (error: any) => {
+          console.error("Payment Error", error);
+          toast.error("فشلت عملية الدفع، يرجى المحاولة مرة أخرى");
+          fetch(`/api/payments/${payment.id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "FAILED" }),
+          }).catch(console.error);
+        },
+        cancelCallback: () => {
+          console.log("Payment Cancelled");
+          toast.info("تم إلغاء عملية الدفع");
+          fetch(`/api/payments/${payment.id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "CANCELLED" }),
+          }).catch(console.error);
+        },
+      };
+
+      // @ts-ignore
+      Lightbox.Checkout.showLightbox();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "حدث خطأ غير متوقع");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
   return (
     <FadeInUP>
       <Card className={` border-zinc-200 h-full flex flex-col bg-white`}>
@@ -75,8 +174,13 @@ export type PricePlan = {
           </ul>
         </CardContent>
         <CardFooter className="pt-0">
-          <Button className="w-full text-white" variant={"secondary"}>
-            ابدأ الآن
+          <Button 
+            className="w-full text-white" 
+            variant={"secondary"}
+            onClick={handlePay}
+            disabled={isPaying}
+          >
+            {isPaying ? "جاري التحويل..." : "ابدأ الآن"}
           </Button>
         </CardFooter>
       </Card>

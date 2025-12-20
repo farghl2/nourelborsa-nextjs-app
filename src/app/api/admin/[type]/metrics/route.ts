@@ -143,7 +143,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ type: strin
       const cards = [
         { title: "عدد الخطط", value: count.toString() },
         { title: "أكثر خطة تحقيقًا للإيرادات", value: topRevenue },
-        { title: "متوسط سعر الاشتراك", value: `$${(avgPrice._avg.price ?? 0).toFixed(1)}` },
+        { title: "متوسط سعر الاشتراك", value: `${(avgPrice._avg.price ?? 0).toFixed(1)} EGP` },
         { title: "المستخدمون لكل خطة", value: usersPerPlan || "—" },
       ]
 
@@ -185,10 +185,10 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ type: strin
       const topNames = top2.map(t => users.find(u=>u.id===t.userId)?.email || t.userId).join(", ") || "—"
 
       const cards = [
-        { title: "إجمالي الإيرادات", value: `$${Math.round(totalSumAgg._sum.amount || 0).toLocaleString()}` },
-        { title: "الإيرادات الشهرية", value: `$${Math.round(monthlySumAgg._sum.amount || 0).toLocaleString()}` },
-        { title: "نسبة المدفوعات الناجحة", value: `${successRate}%`, hint: "مقابل ${100-successRate}% فاشلة" },
-        { title: "متوسط قيمة الدفع", value: `$${(avgAgg._avg.amount || 0).toFixed(1)}` },
+        { title: "إجمالي الإيرادات", value: `${Math.round(totalSumAgg._sum.amount || 0).toLocaleString()} EGP` },
+        { title: "الإيرادات الشهرية", value: `${Math.round(monthlySumAgg._sum.amount || 0).toLocaleString()} EGP` },
+        { title: "نسبة المدفوعات الناجحة", value: `${successRate}%`, hint: `مقابل ${100-successRate}% فاشلة` },
+        { title: "متوسط قيمة الدفع", value: `${(avgAgg._avg.amount || 0).toFixed(1)} EGP` },
         { title: "أكثر المستخدمين دفعًا", value: topNames },
       ]
 

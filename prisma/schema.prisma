@@ -104,15 +104,17 @@ model Subscription {
 }
 
 model Payment {
-  id             String    @id @default(cuid())
-  userId         String
-  amount         Float
-  currency       String     @default("usd")
-  status         PaymentStatus
-  transactionId  String?
-  createdAt      DateTime   @default(now())
-  user           User       @relation(fields: [userId], references: [id])
-  subscription   Subscription[]
+  id                String    @id @default(cuid())
+  userId            String
+  planId            String?
+  merchantReference String?   @unique // Add this field
+  amount            Float
+  currency          String     @default("EGP")
+  status            PaymentStatus
+  transactionId     String?
+  createdAt         DateTime   @default(now())
+  user              User       @relation(fields: [userId], references: [id])
+  subscription      Subscription[]
 }
 
 enum SubscriptionStatus {

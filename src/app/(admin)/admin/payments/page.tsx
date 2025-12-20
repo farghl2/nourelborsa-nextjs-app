@@ -40,7 +40,7 @@ export default function AdminPaymentsPage() {
   const columns: Column<PaymentRow>[] = useMemo(
     () => [
       { key: "userEmail", label: "البريد" },
-      { key: "amount", label: "القيمة", render: (r) => `$${r.amount.toFixed(2)} ${r.currency.toUpperCase()}` },
+      { key: "amount", label: "القيمة", render: (r) => `${r.amount.toFixed(2)} ${r.currency.toUpperCase()}` },
       {
         key: "status",
         label: "الحالة",
@@ -69,7 +69,7 @@ export default function AdminPaymentsPage() {
         .map((u) => ({ label: u.email as string, value: u.email as string })),
     },
     { name: "amount", label: "القيمة", type: "number", placeholder: "0" },
-    { name: "currency", label: "العملة", type: "text", placeholder: "usd" },
+    { name: "currency", label: "العملة", type: "text", placeholder: "EGP" },
     {
       name: "status",
       label: "الحالة",
@@ -95,7 +95,7 @@ export default function AdminPaymentsPage() {
     const normalized = {
       userEmail: values.userEmail,
       amount: Number(values.amount),
-      currency: values.currency || "usd",
+      currency: values.currency || "EGP",
       status: values.status as PaymentRow["status"],
       transactionId: values.transactionId || null,
     }
@@ -137,14 +137,14 @@ export default function AdminPaymentsPage() {
             ? {
                 userEmail: editing?.userEmail ?? "",
                 amount: editing?.amount ?? 0,
-                currency: editing?.currency ?? "usd",
+                currency: editing?.currency ?? "EGP",
                 status: editing?.status ?? "PENDING",
                 transactionId: editing?.transactionId ?? "",
               }
             : {
                 userEmail: "",
                 amount: 0,
-                currency: "usd",
+                currency: "EGP",
                 status: "PENDING",
                 transactionId: "",
               }

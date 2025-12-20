@@ -24,15 +24,28 @@ export async function POST(req: Request) {
     const payment = await prisma.payment.create({
       data: {
         userId: auth.id,
+        planId: parsed.data.planId,
         amount: plan.price,
-        // currency default is set by schema to "usd"
         status: "PENDING",
       },
-      select: { id: true, amount: true, currency: true, status: true, createdAt: true },
     })
 
-    // Placeholder for future gateway integration
+    // Create a clean merchant reference
+    const merchantReference = `ORD${payment.id.toUpperCase().slice(-12)}`
+    
+    // Update the payment with the reference
+    const updatedPayment = await prisma.payment.update({
+      where: { id: payment.id },
+      data: { merchantReference },
+      select: { id: true, amount: true, currency: true, status: true, createdAt: true, merchantReference: true },
+    })
+
     const provider = parsed.data.provider ?? "manual"
+    
+    if (provider === "paysky") {
+      return NextResponse.json({ payment: updatedPayment }, { status: 201 })
+    }
+
     const redirectUrl = `/payments/${payment.id}/continue?provider=${encodeURIComponent(provider)}`
 
     return NextResponse.json({ payment, redirectUrl }, { status: 201 })

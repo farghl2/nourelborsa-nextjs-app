@@ -36,7 +36,7 @@ export default function ProfilePage() {
         {role !== "USER" && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">الدور</span>
-            <Badge variant="secondary" className="font-medium">{role}</Badge>
+            <Badge variant="secondary" className="font-medium text-white">{role}</Badge>
           </div>
         )}
         <div className="flex items-center justify-between">
@@ -49,7 +49,10 @@ export default function ProfilePage() {
         </div>
 
         <div className="pt-2 flex items-center justify-end gap-3">
-        {plan == "Free" && <Button variant="outline" className="hover:text-white" asChild>
+          {user.role === 'ADMIN' || user.role === 'ACCOUNTANT' ? <Button variant="outline" className="hover:text-white" asChild>
+            <a href="/admin">لوحة التحكم</a>
+          </Button>:
+        plan == "Free" && <Button variant="outline" className="hover:text-white" asChild>
             <a href="/pricing">ترقية الخطة</a>
           </Button>}
           <Button

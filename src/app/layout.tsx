@@ -7,6 +7,7 @@ import ScrollUpButton from "@/components/atoms/ScrollUpButton";
 import Footer from "@/components/features/Footer";
 import AuthProvider from "@/components/AuthProvider";
 import { Toaster } from "sonner";
+import Script from 'next/script';
 
 const geistSans = Cairo({
   variable: "--cairo",
@@ -33,6 +34,9 @@ export default function RootLayout({
            
             <Header />
             {children}
+            <Script src="https://red3.paysky.io:3011/LB/js/Lightbox.js"
+                      strategy="afterInteractive"
+            />
             <Toaster position="top-right"/>
             <ScrollUpButton />
             <Footer />
