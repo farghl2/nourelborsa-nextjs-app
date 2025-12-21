@@ -62,21 +62,29 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 })
     }
 
+    // If status is being set to ACTIVE and dates aren't provided, calculate them
+    let updateData = { ...parsed.data }
+    if (parsed.data.status === "ACTIVE" && !parsed.data.startDate && !parsed.data.endDate) {
+      const plan = await prisma.subscriptionPlan.findUnique({ where: { id: existing.planId } })
+      if (plan) {
+        updateData.startDate = new Date()
+        updateData.endDate = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000)
+      }
+    }
+
     const updated = await prisma.subscription.update({
       where: { id },
-      data: parsed.data,
+      data: updateData,
       include: {
         user: { select: { email: true } },
-        plan: { select: { name: true, purificationLimit: true, allowedStocks: true } },
+        plan: { select: { name: true, purificationLimit: true, allowedStocks: true, durationDays: true } },
       },
     })
 
     // If status is being set to ACTIVE, update user's purificationCount to the plan's purificationLimit
     if (parsed.data.status === "ACTIVE") {
-      await prisma.user.update({
-        where: { id: updated.userId },
-        data: { purificationCount: updated.plan.purificationLimit ?? 0 }
-      })
+      const { resetPurificationCount } = await import("@/lib/purification")
+      await resetPurificationCount(updated.userId, updated.plan.purificationLimit)
     }
 
     const result = {

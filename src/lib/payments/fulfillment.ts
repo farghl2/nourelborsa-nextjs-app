@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { resetPurificationCount } from "@/lib/purification";
 
 export async function fulfillPayment(paymentIdOrReference: string, transactionId?: string) {
   // 1. Find the payment
@@ -23,26 +24,36 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
     return { success: true, payment, alreadyProcessed: true };
   }
 
-  // 2. Mark payment as succeeded
-  const updatedPayment = await prisma.payment.update({
-    where: { id: payment.id },
-    data: {
-      status: "SUCCEEDED",
-      transactionId: transactionId || payment.transactionId,
-    },
+  // 2. Get plan details
+  if (!payment.planId) {
+    return { success: false, error: "No plan associated with payment" };
+  }
+
+  const plan = await prisma.subscriptionPlan.findUnique({
+    where: { id: payment.planId },
   });
 
-  // 3. Create or update subscription if planId exists
-  if (payment.planId) {
-    const plan = await prisma.subscriptionPlan.findUnique({
-      where: { id: payment.planId },
-    });
+  if (!plan) {
+    return { success: false, error: "Plan not found" };
+  }
 
-    if (plan) {
-      // Deactivate any existing active subscriptions for this user
-      await prisma.subscription.updateMany({
+  // 3. Perform all operations in a transaction for atomicity
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Update payment status
+      const updatedPayment = await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: "SUCCEEDED",
+          transactionId: transactionId || payment.transactionId,
+        },
+      });
+
+      // Deactivate any existing active subscription for the SAME plan
+      await tx.subscription.updateMany({
         where: {
           userId: payment.userId,
+          planId: payment.planId,
           status: "ACTIVE",
         },
         data: {
@@ -51,7 +62,7 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
       });
 
       // Create new subscription
-      const subscription = await prisma.subscription.create({
+      const subscription = await tx.subscription.create({
         data: {
           userId: payment.userId,
           planId: payment.planId,
@@ -63,22 +74,22 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
         },
       });
 
-      // Update user's purification count if plan specifies it
-      if (plan.purificationLimit !== null && plan.purificationLimit !== undefined) {
-        await prisma.user.update({
-          where: { id: payment.userId },
-          data: {
-            purificationCount: plan.purificationLimit,
-          },
-        });
-      }
+      // Update purification count
+      await tx.user.update({
+        where: { id: payment.userId },
+        data: { purificationCount: plan.purificationLimit ?? 0 },
+      });
 
-      return { success: true, payment: updatedPayment, subscription };
-    }
+      return { payment: updatedPayment, subscription };
+    });
+
+    return { success: true, ...result };
+  } catch (error) {
+    console.error("Transaction failed in fulfillPayment:", error);
+    return { success: false, error: "Failed to process payment" };
   }
-
-  return { success: true, payment: updatedPayment };
 }
+
 
 export async function failPayment(paymentIdOrReference: string, error?: string) {
   return await prisma.payment.updateMany({
@@ -96,10 +107,6 @@ export async function failPayment(paymentIdOrReference: string, error?: string) 
 }
 
 export async function cancelPayment(paymentIdOrReference: string) {
-  // We keep it as PENDING or mark as FAILED? Usually FAILED or a new CANCELLED status.
-  // Prisma schema PaymentStatus only has SUCCEEDED, PENDING, FAILED.
-  // I'll use FAILED for cancellation as well or keep it pending. 
-  // Better to mark as FAILED to clean up.
   return await prisma.payment.updateMany({
     where: {
       OR: [
@@ -109,7 +116,7 @@ export async function cancelPayment(paymentIdOrReference: string) {
       status: "PENDING",
     },
     data: {
-      status: "FAILED",
+      status: "CANCELLED",
     },
   });
 }

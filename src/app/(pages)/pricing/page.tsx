@@ -1,10 +1,23 @@
 "use client";
 import FadeInUP from "@/animations/FadeInUP";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 
 
 export default function PricesPlanSection() {
   const {plans, loading} = useAdminPlans();
+  const searchParams = useSearchParams();
+
+  // Check for error parameters and show notification
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const ref = searchParams.get("ref");
+    
+    if (error === "payment_failed") {
+      toast.error("فشلت عملية الدفع. يرجى المحاولة مرة أخرى.");
+    }
+  }, [searchParams]);
 
   if(loading) return <Loading />
   return (
@@ -39,8 +52,9 @@ import { useAdminPlans } from "@/hooks/useAdminPlans";
 import Loading from "@/app/loading";
 import { AdminPlan } from "@/lib/services/plans";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export type PricePlan = {
   title: string;
@@ -53,9 +67,16 @@ export type PricePlan = {
  function PricePlanCard({ id, name, active, durationDays, price, description, features, purificationLimit}: AdminPlan) {
   const [isPaying, setIsPaying] = useState(false);
   const router = useRouter();
+  const handledRef = useRef(false);
+  const { data: session } = useSession();
+
+  // Check if this is the user's current active plan
+  const userPlanId = (session?.user as any)?.planId;
+  const isCurrentPlan = userPlanId === id;
 
   const handlePay = async () => {
     try {
+      handledRef.current = false;
       setIsPaying(true);
       
       // 1. Create pending payment
@@ -113,11 +134,15 @@ export type PricePlan = {
         ReturnURL: window.location.origin + "/api/webhooks/paysky", 
 
         completeCallback: (response: any) => {
+          if (handledRef.current) return;
+          handledRef.current = true;
           console.log("Payment Success", response);
           toast.success("تمت عملية الدفع بنجاح");
-          router.push(`/payments/success?ref=${merchantReference}`);
+          window.location.href = `/api/webhooks/paysky?Success=true&MerchantReference=${merchantReference}`;
         },
         errorCallback: (error: any) => {
+          if (handledRef.current) return;
+          handledRef.current = true;
           console.error("Payment Error", error);
           toast.error("فشلت عملية الدفع، يرجى المحاولة مرة أخرى");
           fetch(`/api/payments/${payment.id}/status`, {
@@ -127,6 +152,8 @@ export type PricePlan = {
           }).catch(console.error);
         },
         cancelCallback: () => {
+          if (handledRef.current) return;
+          handledRef.current = true;
           console.log("Payment Cancelled");
           toast.info("تم إلغاء عملية الدفع");
           fetch(`/api/payments/${payment.id}/status`, {
@@ -175,12 +202,12 @@ export type PricePlan = {
         </CardContent>
         <CardFooter className="pt-0">
           <Button 
-            className="w-full text-white" 
-            variant={"secondary"}
+            className={`w-full ${isCurrentPlan ? "" : "text-white"}`}
+            variant={isCurrentPlan ? "outline" : "secondary"}
             onClick={handlePay}
-            disabled={isPaying}
+            disabled={isPaying || isCurrentPlan}
           >
-            {isPaying ? "جاري التحويل..." : "ابدأ الآن"}
+            {isPaying ? "جاري التحويل..." : isCurrentPlan ? "خطتك الحالية" : "ابدأ الآن"}
           </Button>
         </CardFooter>
       </Card>

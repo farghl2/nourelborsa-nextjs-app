@@ -24,8 +24,6 @@ export async function PATCH(
     if (status === "FAILED") {
       await failPayment(payment.id);
     } else if (status === "CANCELLED") {
-      // In our schema status is an enum, and CANCELLED might not exist.
-      // We'll use FAILED as handled in fulfillment.ts for cancelPayment.
       await cancelPayment(payment.id);
     }
 

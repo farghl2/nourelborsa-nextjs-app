@@ -4,6 +4,16 @@ import { useSession, signOut } from "next-auth/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
+// Helper function to calculate days remaining
+function getDaysRemaining(endDate: string | null | undefined): number | null {
+  if (!endDate) return null
+  const end = new Date(endDate)
+  const now = new Date()
+  const diffTime = end.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays > 0 ? diffDays : 0
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession()
 
@@ -11,6 +21,7 @@ export default function ProfilePage() {
     role?: string
     plan?: string
     status?: string
+    subscriptionEndDate?: string
   }
 
   const name = user?.name || "غير معروف"
@@ -18,6 +29,8 @@ export default function ProfilePage() {
   const role = user?.role || "USER"
   const plan = (user as any)?.plan || "Free"
   const acctStatus = (user as any)?.status || (status === "authenticated" ? "Active" : "Unknown")
+  const subscriptionEndDate = (user as any)?.subscriptionEndDate
+  const daysRemaining = getDaysRemaining(subscriptionEndDate)
 
   return (
     <div dir="rtl" className="container mx-auto max-w-3xl px-4 py-12">
@@ -47,9 +60,38 @@ export default function ProfilePage() {
           <span className="text-sm text-muted-foreground">الحالة</span>
           <Badge variant="outline" className="font-medium">{acctStatus}</Badge>
         </div>
+        
+        {/* Show subscription end date and days remaining if available */}
+        {subscriptionEndDate && daysRemaining !== null && (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">تاريخ انتهاء الاشتراك</span>
+              <span className="font-medium text-sm">
+                {new Date(subscriptionEndDate).toLocaleDateString('ar-EG', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">الأيام المتبقية</span>
+              <Badge 
+                variant={
+                  daysRemaining > 14 ? "default" : 
+                  daysRemaining > 7 ? "secondary" : 
+                  "destructive"
+                } 
+                className="font-medium"
+              >
+                {daysRemaining} {daysRemaining === 1 ? "يوم" : "أيام"}
+              </Badge>
+            </div>
+          </>
+        )}
 
         <div className="pt-2 flex items-center justify-end gap-3">
-          {user.role === 'ADMIN' || user.role === 'ACCOUNTANT' ? <Button variant="outline" className="hover:text-white" asChild>
+          {user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT' ? <Button variant="outline" className="hover:text-white" asChild>
             <a href="/admin">لوحة التحكم</a>
           </Button>:
         plan == "Free" && <Button variant="outline" className="hover:text-white" asChild>

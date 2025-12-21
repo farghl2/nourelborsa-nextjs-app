@@ -127,6 +127,7 @@ enum PaymentStatus {
   SUCCEEDED
   PENDING
   FAILED
+  CANCELLED
 }
 
 model Stock {

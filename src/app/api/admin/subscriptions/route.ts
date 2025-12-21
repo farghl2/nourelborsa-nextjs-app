@@ -76,12 +76,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User already has an active subscription" }, { status: 400 })
     }
 
+    // Calculate subscription dates based on plan duration
+    const startDate = new Date()
+    const endDate = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000)
+
     const created = await prisma.subscription.create({
       data: {
         userId: user.id,
         planId: plan.id,
         status: status ?? "ACTIVE",
         renewedByAdmin: renewedByAdmin ?? false,
+        startDate,
+        endDate,
       },
       include: {
         user: { select: { email: true } },
@@ -89,11 +95,9 @@ export async function POST(req: Request) {
       },
     })
 
-    // Update user's purificationCount to the plan's purificationLimit
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { purificationCount: plan.purificationLimit ?? 0 }
-    })
+    // Update user's purification count using centralized utility
+    const { resetPurificationCount } = await import("@/lib/purification")
+    await resetPurificationCount(user.id, plan.purificationLimit)
 
     const result = {
       id: created.id,

@@ -37,20 +37,34 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    // Decrement purificationCount
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        purificationCount: currentCount - 1
+    // Atomic decrement with race condition protection
+    // Only decrement if count is still > 0
+    const updatedUser = await prisma.user.updateMany({
+      where: {
+        id: user.id,
+        purificationCount: { gt: 0 } // Only update if still greater than 0
       },
-      select: {
-        purificationCount: true
+      data: {
+        purificationCount: { decrement: 1 }
       }
+    })
+
+    // If no rows updated, user ran out of purifications
+    if (updatedUser.count === 0) {
+      return NextResponse.json({
+        message: "لقد وصلت للحد الأقصى"
+      }, { status: 402 })
+    }
+
+    // Fetch updated count to return
+    const finalUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { purificationCount: true }
     })
 
     return NextResponse.json({ 
       success: true,
-      purificationCount: updatedUser.purificationCount,
+      purificationCount: finalUser?.purificationCount ?? 0,
     })
 
   } catch (error) {

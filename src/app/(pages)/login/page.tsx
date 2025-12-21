@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner"
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -28,24 +29,6 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
-      })
-
-      const data = await res.json().catch(() => null)
-
-      if (!res.ok) {
-        const message = (data as any)?.error || "تعذر تسجيل الدخول. تأكد من البريد وكلمة المرور."
-        alert(message)
-        return
-      }
-
-      
       const result = await signIn("credentials", {
         redirect: false,
         email: values.email,
@@ -54,9 +37,7 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-
-        console.error("NextAuth signIn error", result.error)
-        window.location.href = "/"
+        toast.error("تعذر تسجيل الدخول. تأكد من البريد وكلمة المرور.")
         return
       }
 
@@ -67,8 +48,9 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("login submit error", error)
-      alert("حدث خطأ غير متوقع. حاول مرة أخرى.")
+      toast.error("حدث خطأ غير متوقع. حاول مرة أخرى.")
     }
+
   }
 
   return (

@@ -21,6 +21,21 @@ export async function POST(req: Request) {
     const plan = await prisma.subscriptionPlan.findUnique({ where: { id: parsed.data.planId, active: true } })
     if (!plan) return NextResponse.json({ error: "Subscription plan not found" }, { status: 404 })
 
+    // Check if user already has an active subscription to this plan
+    const existingSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId: auth.id,
+        planId: parsed.data.planId,
+        status: "ACTIVE"
+      }
+    })
+
+    if (existingSubscription) {
+      return NextResponse.json({ 
+        error: "لديك بالفعل اشتراك نشط في هذه الخطة. لا يمكنك الاشتراك مرة أخرى حتى انتهاء الاشتراك الحالي." 
+      }, { status: 400 })
+    }
+
     const payment = await prisma.payment.create({
       data: {
         userId: auth.id,

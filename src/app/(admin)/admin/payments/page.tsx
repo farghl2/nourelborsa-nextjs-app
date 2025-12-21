@@ -46,7 +46,7 @@ export default function AdminPaymentsPage() {
         label: "الحالة",
         render: (r) =>
           r.status === "SUCCEEDED" ? (
-            <Badge>ناجحة</Badge>
+            <Badge className="bg-green-500 text-white">ناجحة</Badge>
           ) : r.status === "FAILED" ? (
             <Badge variant="destructive">فاشلة</Badge>
           ) : (

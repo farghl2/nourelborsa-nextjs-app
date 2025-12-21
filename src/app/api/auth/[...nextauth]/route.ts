@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
               where: { status: "ACTIVE" },
               include: {
                 plan: {
-                  select: { name: true, allowedStocks: true }
+                  select: { name: true, allowedStocks: true, id: true }
                 }
               }
             }
@@ -58,8 +58,10 @@ export const authOptions: NextAuthOptions = {
           // Add plan information
           const activeSubscription = dbUser.subscriptions[0]
           token.plan = activeSubscription?.plan?.name || "Free"
+          token.planId = activeSubscription?.plan?.id
           token.status = activeSubscription ? "Active" : "Inactive"
           token.allowedStocks = activeSubscription?.plan?.allowedStocks || false
+          token.subscriptionEndDate = activeSubscription?.endDate?.toISOString()
         }
       }
       return token
@@ -69,8 +71,10 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role
         ;(session.user as any).plan = token.plan || "Free"
+        ;(session.user as any).planId = token.planId
         ;(session.user as any).status = token.status || "Inactive"
         ;(session.user as any).allowedStocks = token.allowedStocks || false
+        ;(session.user as any).subscriptionEndDate = token.subscriptionEndDate
       }
       return session
     },

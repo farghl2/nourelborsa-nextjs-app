@@ -49,15 +49,16 @@ export async function GET(req: Request) {
     const body = Object.fromEntries(searchParams.entries());
     console.log("PaySky GET Callback received:", body);
     
-    const MerchantReference = body.MerchantReference || body.merchantReference;
-    const Success = body.Success || body.success || body.Status;
+    const MerchantReference = body.MerchantReference || body.merchantReference || body.ref;
+    const Success = body.Success || body.success || body.status || body.Status;
     
     if (!MerchantReference) {
+        console.warn("PaySky Callback received without MerchantReference:", body);
         return NextResponse.redirect(new URL("/pricing", req.url));
     }
 
     const successValue = String(Success || "").toLowerCase();
-    const isSuccess = Success === "true" || ["00", "000", "success", "approved"].includes(successValue);
+    const isSuccess = Success === "true" || Success === true || ["00", "000", "success", "approved"].includes(successValue);
 
     if (isSuccess) {
         await fulfillPayment(String(MerchantReference));

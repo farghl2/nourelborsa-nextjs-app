@@ -40,6 +40,8 @@ export type CreateSubscriptionAdminInput = z.infer<typeof createSubscriptionAdmi
 export const updateSubscriptionAdminSchema = z.object({
   status: z.enum(["ACTIVE", "CANCELLED", "EXPIRED"]).optional(),
   renewedByAdmin: z.boolean().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
 }).refine(obj => Object.keys(obj).length > 0, {
   message: "لا توجد تغييرات",
 })
