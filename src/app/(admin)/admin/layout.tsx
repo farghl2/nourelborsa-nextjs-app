@@ -29,11 +29,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: session } = useSession()
   const links = [
     { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
+    { href: "/admin/stocks", label: "الأسهم", icon: LineChart },
+    { href: "/admin/plans", label: "الخطط", icon: Package2 },
     { href: "/admin/users", label: "المستخدمون", icon: Users, adminOnly:true },
     { href: "/admin/subscriptions", label: "الاشتراكات", icon: CreditCard },
-    { href: "/admin/plans", label: "الخطط", icon: Package2 },
     { href: "/admin/payments", label: "المدفوعات", icon: Receipt },
-    { href: "/admin/stocks", label: "الأسهم", icon: LineChart },
   ]
 
   const filteredLinks = links.filter(link => {
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarGroup>
             <SidebarGroupLabel>القائمة</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="mt-6">
                 {filteredLinks.map((link) => (
                   <SidebarMenuItem key={link.href}>
                     <SidebarMenuButton asChild 

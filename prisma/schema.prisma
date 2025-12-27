@@ -25,6 +25,8 @@ model User {
   password       String?
   role           Role            @default(USER)
   purificationCount Int?           @default(3)     // عدد مرات استخدام ميزة التطهير
+  aiUsageCount   Int             @default(0)      // عدد مرات استخدام AI هذا الشهر
+  lastAiUsageReset DateTime?                      // آخر مرة تم إعادة تعيين العداد
   accounts       Account[]
   sessions       Session[]
   subscriptions  Subscription[]
@@ -142,7 +144,8 @@ model Stock {
   createdAt                        DateTime  @default(now())
   updatedAt                        DateTime  @updatedAt
   companyActivity                  String?   // نشاط الشركة
-  prohibitedRevenuePercentage      Float?    // نسبة الإيرادات المحرمة
+  prohibitedRevenuePercentage      String?   // نسبة الإيرادات المحرمة (less_than_5, more_than_5, less_than_10, more_than_10)
+  prohibitedRevenuePercentageSecondary String? // نسبة الإيرادات المحرمة - الخيار الثاني
   interestBearingLoansPercentage   Float?    // نسبة القروض الربوية
   interestBearingDepositsPercentage Float?   // نسبة الإيداعات الربوية
   assetsPercentage                 Float?    // نسبة الأصول

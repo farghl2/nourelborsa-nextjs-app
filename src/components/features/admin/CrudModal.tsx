@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { ChevronsUpDown } from "lucide-react"
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils"
 export type FieldDef = {
   name: string
   label: string
-  type?: "text" | "email" | "number" | "select" | "array"
+  type?: "text" | "email" | "number" | "select" | "array" | "switch" | "multiselect"
   placeholder?: string
   options?: { label: string; value: string }[]
   itemType?: string
@@ -65,6 +66,14 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                       <FormControl>
                         {f.type === "select" ? (
                           <SelectBox value={field.value} onChange={field.onChange} options={f.options || []} placeholder={f.placeholder || "اختر"} />
+                        ) : f.type === "switch" ? (
+                          <div className="flex items-center gap-2">
+                            <Switch 
+                              dir="ltr" 
+                              checked={field.value === true || field.value === "true"} 
+                              onCheckedChange={(checked) => field.onChange(checked)}
+                            />
+                          </div>
                         ) : f.type === "array" ? (
                           <div className="w-full space-y-2">
                             {(field.value || []).map((item: string, index: number) => (

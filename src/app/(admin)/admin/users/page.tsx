@@ -55,7 +55,7 @@ export default function AdminUsersPage() {
       <FadeReveal>
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold flex items-center gap-2"><UserRound className="h-5 w-5" /> المستخدمون</h1>
-          <Button disabled className="flex items-center gap-2 opacity-60 cursor-not-allowed">إضافة مستخدم</Button>
+          {/* <Button variant={'ghost'} disabled className="flex items-center gap-2 opacity-60 cursor-not-allowed">إضافة مستخدم</Button> */}
         </div>
       </FadeReveal>
       <FadeReveal delay={0.05}>

@@ -45,20 +45,12 @@ export default function AdminPlansPage() {
     {
       name: "active",
       label: "مفعلة؟",
-      type: "select",
-      options: [
-        { label: "نعم", value: "true" },
-        { label: "لا", value: "false" },
-      ],
+      type: "switch",
     },
     {
       name: "allowedStocks",
       label: "مسموح بتحليلات الأسهم؟",
-      type: "select",
-      options: [
-        { label: "نعم", value: "true" },
-        { label: "لا", value: "false" },
-      ],
+      type: "switch",
     },
     {
       name: "features",
@@ -83,7 +75,6 @@ export default function AdminPlansPage() {
       features: Array.isArray(values.features) 
         ? values.features.filter((f: string) => f.trim() !== '')
         : [],
-      active: values.active === 'true' || values.active === true
     };
     
     if (isEdit && editing) {
@@ -123,7 +114,7 @@ export default function AdminPlansPage() {
         defaultValues={{
           ...editing,
           features: editing?.features || [],
-          active: editing?.active?.toString() || 'true',
+          active: editing?.active ?? true,
           durationDays: editing?.durationDays || 30,
           purificationLimit: editing?.purificationLimit || 0
         }}

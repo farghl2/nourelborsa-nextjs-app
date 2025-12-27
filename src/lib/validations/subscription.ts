@@ -52,10 +52,9 @@ export type UpdateSubscriptionPlanInput = z.infer<typeof updateSubscriptionPlanS
 export type UpdateSubscriptionAdminInput = z.infer<typeof updateSubscriptionAdminSchema>
 
 // Form schema for the admin subscriptions page (used with CrudModal)
-// Here renewedByAdmin is represented as string values "true" / "false" in the UI
 export const subscriptionAdminFormSchema = z.object({
   status: z.enum(["ACTIVE", "CANCELLED", "EXPIRED"]),
-  renewedByAdmin: z.enum(["true", "false"]),
+  renewedByAdmin: z.coerce.boolean(),
 })
 
 export type SubscriptionAdminFormValues = z.infer<typeof subscriptionAdminFormSchema>
@@ -65,7 +64,7 @@ export const subscriptionAdminCreateFormSchema = z.object({
   userEmail: z.string().trim().toLowerCase().email("ادخل بريد المستخدم"),
   planId: z.string().trim().min(1, "اختر الخطة"),
   status: z.enum(["ACTIVE", "CANCELLED", "EXPIRED"]),
-  renewedByAdmin: z.enum(["true", "false"]),
+  renewedByAdmin: z.coerce.boolean(),
 })
 
 export type SubscriptionAdminCreateFormValues = z.infer<typeof subscriptionAdminCreateFormSchema>

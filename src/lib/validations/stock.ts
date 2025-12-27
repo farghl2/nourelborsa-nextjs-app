@@ -3,6 +3,19 @@ import { z } from "zod"
 const stringToNumber = (val: string) => val === '' ? null : Number(val);
 const stringToBoolean = (val: string) => val === 'true';
 
+// Convert prohibited revenue category to numeric value
+const prohibitedRevenueToNumber = (val: string | number) => {
+  if (typeof val === 'number') return val;
+  
+  switch (val) {
+    case 'less_than_5': return 2.5;
+    case 'more_than_5': return 7.5;
+    case 'less_than_10': return 7.5;
+    case 'more_than_10': return 15;
+    default: return val === '' ? null : Number(val);
+  }
+};
+
 export const createStockSchema = z.object({
   name: z.string().min(1).max(255),
   price: z.union([
@@ -16,10 +29,8 @@ export const createStockSchema = z.object({
     z.boolean(),
     z.string().transform(stringToBoolean)
   ]).optional(),
-  prohibitedRevenuePercentage: z.union([
-    z.number(),
-    z.string().transform(stringToNumber)
-  ]).nullable().optional(),
+  prohibitedRevenuePercentage: z.string().nullable().optional(),
+  prohibitedRevenuePercentageSecondary: z.string().nullable().optional(),
   interestBearingLoansPercentage: z.union([
     z.number(),
     z.string().transform(stringToNumber)

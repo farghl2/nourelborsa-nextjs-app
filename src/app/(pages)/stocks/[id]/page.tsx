@@ -10,6 +10,32 @@ import Loading from "@/app/loading"
 import { useRouter } from "next/navigation"
 import { Lock } from "lucide-react"
 
+// Helper function to convert category string to numeric value for comparison
+const categoryToNumber = (category: string | null | undefined): number | null => {
+  if (!category) return null;
+  
+  switch (category) {
+    case "less_than_5": return 2.5;
+    case "more_than_5": return 7.5;
+    case "less_than_10": return 7.5;
+    case "more_than_10": return 15;
+    default: return null;
+  }
+};
+
+// Helper function to convert category string to display label
+const categoryToLabel = (category: string | null | undefined): string => {
+  if (!category) return "—";
+  
+  switch (category) {
+    case "less_than_5": return "اقل من 5%";
+    case "more_than_5": return "اكبر من 5%";
+    case "less_than_10": return "اقل من 10%";
+    case "more_than_10": return "اكبر من 10%";
+    default: return category;
+  }
+};
+
 const chips = [
   { label: "نسبة الإيرادات الربوية", value: "أقل من 5%" },
   { label: "نسبة القروض الربوية", value: "أقل من 10%" },
@@ -72,33 +98,111 @@ export default function StockDetailsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "الدخل المحظور", value: stock?.prohibitedRevenuePercentage, type: "percent" as const },
-                { label: " القروض الربوية", value: stock?.interestBearingLoansPercentage, type: "percent" as const },
-                { label: " الايدعات الربوية", value: stock?.interestBearingDepositsPercentage, type: "percent" as const },
-                { label: " الاصول السائلة", value: stock?.assetsPercentage, type: "percent" as const },
-                
-              ].map((c) => (
-                <div key={c.label} className="rounded-lg bg-secondary/20 border p-4 text-center">
-                  <div className="text-sm text-muted-foreground">{c.label}</div>
-                  {c.type === "percent" ? (
-                    <div className="mt-1 text-xl font-semibold">
-                      {c.value === null || typeof c.value === "undefined" ? "—" : `${c.value}%`}
-                    </div>
-                  ) : c.value === null ? (
-                    <button
-                      type="button"
-                      onClick={goToPlans}
-                      className="mt-1 inline-flex items-center justify-center gap-1 text-sm text-primary hover:underline"
-                    >
-                      <Lock className="size-4" />
-                      <span>اشترك لعرض الرسالة</span>
-                    </button>
-                  ) : (
-                    <div className="mt-1 text-xl font-semibold">{String(c.value)}</div>
-                  )}
+              {/* Prohibited Revenue - Dual Display */}
+              <div className="rounded-lg  border overflow-hidden">
+                <div className="text-sm text-muted-foreground text-center pt-4 px-2 mb-3">الدخل المحظور</div>
+                <div className="flex h-16">
+                  {/* First Value */}
+                  <div 
+                    className={`flex-1 flex items-center justify-center text-xl font-semibold ${
+                      (() => {
+                        const numValue = categoryToNumber(stock?.prohibitedRevenuePercentage);
+                        if (numValue === null) return 'bg-secondary/20';
+                        if (numValue < 5) return 'bg-green-500/20 text-green-700 dark:text-green-400';
+                        if (numValue >= 10) return 'bg-red-500/20 text-red-700 dark:text-red-400';
+                        return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400';
+                      })()
+                    }`}
+                  >
+                    {categoryToLabel(stock?.prohibitedRevenuePercentage)}
+                  </div>
+                  
+                  {/* Vertical Divider */}
+                  <div className="w-px bg-border"></div>
+                  
+                  {/* Second Value */}
+                  <div 
+                    className={`flex-1 flex items-center justify-center text-xl font-semibold ${
+                      (() => {
+                        const numValue = categoryToNumber(stock?.prohibitedRevenuePercentageSecondary);
+                        if (numValue === null) return 'bg-secondary/20';
+                        if (numValue < 10) return 'bg-green-500/20 text-green-700 dark:text-green-400';
+                        return 'bg-red-500/20 text-red-700 dark:text-red-400';
+                      })()
+                    }`}
+                  >
+                    {categoryToLabel(stock?.prohibitedRevenuePercentageSecondary)}
+                  </div>
                 </div>
-              ))}
+              </div>
+
+
+              {/* Other fields with color coding */}
+              {/* القروض الربوية - Interest Bearing Loans */}
+              <div className={`rounded-lg border p-4 text-center ${
+                stock?.interestBearingLoansPercentage === null || stock?.interestBearingLoansPercentage === undefined
+                  ? 'bg-secondary/20'
+                  : stock.interestBearingLoansPercentage < 30
+                  ? 'bg-green-500/20'
+                  : 'bg-red-500/20'
+              }`}>
+                <div className="text-sm text-muted-foreground">القروض الربوية</div>
+                <div className={`mt-1 text-xl font-semibold ${
+                  stock?.interestBearingLoansPercentage !== null && stock?.interestBearingLoansPercentage !== undefined
+                    ? stock.interestBearingLoansPercentage < 30
+                      ? 'text-green-700 dark:text-green-400'
+                      : 'text-red-700 dark:text-red-400'
+                    : ''
+                }`}>
+                  {stock?.interestBearingLoansPercentage === null || stock?.interestBearingLoansPercentage === undefined 
+                    ? "—" 
+                    : `${stock.interestBearingLoansPercentage}%`}
+                </div>
+              </div>
+
+              {/* الايدعات الربوية - Interest Bearing Deposits */}
+              <div className={`rounded-lg border p-4 text-center ${
+                stock?.interestBearingDepositsPercentage === null || stock?.interestBearingDepositsPercentage === undefined
+                  ? 'bg-secondary/20'
+                  : stock.interestBearingDepositsPercentage < 30
+                  ? 'bg-green-500/20'
+                  : 'bg-red-500/20'
+              }`}>
+                <div className="text-sm text-muted-foreground">الايدعات الربوية</div>
+                <div className={`mt-1 text-xl font-semibold ${
+                  stock?.interestBearingDepositsPercentage !== null && stock?.interestBearingDepositsPercentage !== undefined
+                    ? stock.interestBearingDepositsPercentage < 30
+                      ? 'text-green-700 dark:text-green-400'
+                      : 'text-red-700 dark:text-red-400'
+                    : ''
+                }`}>
+                  {stock?.interestBearingDepositsPercentage === null || stock?.interestBearingDepositsPercentage === undefined 
+                    ? "—" 
+                    : `${stock.interestBearingDepositsPercentage}%`}
+                </div>
+              </div>
+
+              {/* الاصول السائلة - Liquid Assets */}
+              <div className={`rounded-lg border p-4 text-center ${
+                stock?.assetsPercentage === null || stock?.assetsPercentage === undefined
+                  ? 'bg-secondary/20'
+                  : stock.assetsPercentage < 70
+                  ? 'bg-green-500/20'
+                  : 'bg-red-500/20'
+              }`}>
+                <div className="text-sm text-muted-foreground">الاصول السائلة</div>
+                <div className={`mt-1 text-xl font-semibold ${
+                  stock?.assetsPercentage !== null && stock?.assetsPercentage !== undefined
+                    ? stock.assetsPercentage < 70
+                      ? 'text-green-700 dark:text-green-400'
+                      : 'text-red-700 dark:text-red-400'
+                    : ''
+                }`}>
+                  {stock?.assetsPercentage === null || stock?.assetsPercentage === undefined 
+                    ? "—" 
+                    : `${stock.assetsPercentage}%`}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

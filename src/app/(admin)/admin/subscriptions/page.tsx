@@ -85,11 +85,7 @@ export default function AdminSubscriptionsPage() {
     {
       name: "renewedByAdmin",
       label: "تجديد بواسطة الأدمن؟",
-      type: "select",
-      options: [
-        { label: "نعم", value: "true" },
-        { label: "لا", value: "false" },
-      ],
+      type: "switch",
     },
   ]
 
@@ -131,7 +127,7 @@ export default function AdminSubscriptionsPage() {
     if (editing) {
       const input = {
         status: values.status,
-        renewedByAdmin: String(values.renewedByAdmin) === "true",
+        renewedByAdmin: !!values.renewedByAdmin,
       }
       updateSubscription(editing.id, input)
     } else {
@@ -139,7 +135,7 @@ export default function AdminSubscriptionsPage() {
         userEmail: values.userEmail,
         planId: values.planId,
         status: values.status,
-        renewedByAdmin: String(values.renewedByAdmin) === "true",
+        renewedByAdmin: !!values.renewedByAdmin,
       }
       createSubscription(input)
     }
@@ -173,13 +169,13 @@ export default function AdminSubscriptionsPage() {
           isEdit
             ? {
                 status: editing?.status ?? "ACTIVE",
-                renewedByAdmin: editing?.renewedByAdmin ? "true" : "false",
+                renewedByAdmin: editing?.renewedByAdmin ? true : false,
               }
             : {
                 userEmail: "",
                 planId: plans[0]?.id ?? "",
                 status: "ACTIVE",
-                renewedByAdmin: "false",
+                renewedByAdmin: false,
               }
         }
         onSubmit={onSubmit}
