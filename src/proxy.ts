@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 import { verifyJwt } from "@/lib/jwt"
-import { redirect } from "next/navigation"
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -20,30 +20,59 @@ export async function proxy(req: NextRequest) {
   ]
   const isPublic = publicMatchers.some((re) => re.test(pathname))
 
-  const token = req.cookies.get("auth_token")?.value
-
   // Protect both private APIs and /admin pages
   if (!isPublic || isAdminPage) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url))
+    // Try custom auth_token first (from /api/auth/login custom route)
+    const customToken = req.cookies.get("auth_token")?.value
+    
+    let userId: string | null = null
+    let userRole: string | null = null
+    
+    if (customToken) {
+      // Verify custom JWT token
+      const payload = await verifyJwt<{ sub?: string; role?: string }>(customToken)
+      if (payload?.sub) {
+        userId = payload.sub
+        userRole = payload.role || null
+      }
     }
-    const payload = await verifyJwt<{ sub?: string; role?: string }>(token)
-    if (!payload || !payload.sub) {
+    
+    // If no custom token, try NextAuth session token
+    if (!userId) {
+      try {
+        // Use NextAuth's getToken to decrypt the session JWT
+        const token = await getToken({ 
+          req, 
+          secret: process.env.NEXTAUTH_SECRET 
+        })
+        
+        if (token) {
+          userId = (token.id as string) || token.sub || null
+          userRole = (token.role as string) || null
+          console.log("[Proxy] NextAuth token found:", { userId, userRole })
+        }
+      } catch (error) {
+        console.error("[Proxy] Error decoding NextAuth token:", error)
+      }
+    }
+    
+    // No valid auth found
+    if (!userId) {
+      console.log("[Proxy] No valid auth, redirecting to login. Path:", pathname)
       return NextResponse.redirect(new URL("/login", req.url))
     }
 
     // Inject user headers for downstream handlers (used by getAuthUser)
     const requestHeaders = new Headers(req.headers)
-    requestHeaders.set("x-user-id", payload.sub)
-    if (payload.role) requestHeaders.set("x-user-role", String(payload.role))
+    requestHeaders.set("x-user-id", userId)
+    if (userRole) requestHeaders.set("x-user-role", String(userRole))
 
-    const role = String(payload.role || "")
+    const role = String(userRole || "")
 
-   
-
-    // Restrict /admin pages to ADMIN and ACCOUNTANT, redirect to /login if unauthorized
+    // Restrict /admin pages to ADMIN and ACCOUNTANT, redirect to home if unauthorized
     if (isAdminPage) {
       if (!["ADMIN", "ACCOUNTANT"].includes(role)) {
+        console.log("[Proxy] User role not authorized for admin:", role)
         const homeUrl = new URL("/", req.nextUrl.origin)
         homeUrl.searchParams.set("callbackUrl", req.nextUrl.pathname)
         return NextResponse.redirect(homeUrl)
@@ -53,7 +82,7 @@ export async function proxy(req: NextRequest) {
     // Enforce ADMIN only for subscription-plans write operations
     const isSubscriptionPlans = pathname.startsWith("/api/subscription-plans")
     const isWrite = req.method === "POST" || req.method === "PATCH" || req.method === "DELETE"
-    if (isSubscriptionPlans && isWrite && payload.role !== "ADMIN") {
+    if (isSubscriptionPlans && isWrite && userRole !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
