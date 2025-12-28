@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { updateSubscriptionPlanSchema } from "@/lib/validations/subscription"
-import { SubscriptionPlan } from "@/generated/prisma"
+import { SubscriptionPlan } from "@prisma/client"
 import { getAuthUser } from "@/lib/auth"
 
 
