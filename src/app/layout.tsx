@@ -13,6 +13,8 @@ import { defaultMetadata } from "@/lib/seo/metadata";
 const geistSans = Cairo({
   variable: "--cairo",
   subsets: ["arabic"],
+  display: 'swap',
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = defaultMetadata;

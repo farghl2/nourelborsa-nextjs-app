@@ -58,7 +58,8 @@ export async function GET(req: Request) {
     }
 
     const successValue = String(Success || "").toLowerCase();
-    const isSuccess = Success === "true" || Success === true || ["00", "000", "success", "approved"].includes(successValue);
+    // URL search params are always strings, so we only check for string values
+    const isSuccess = Success === "true" || ["00", "000", "success", "approved"].includes(successValue);
 
     if (isSuccess) {
         await fulfillPayment(String(MerchantReference));

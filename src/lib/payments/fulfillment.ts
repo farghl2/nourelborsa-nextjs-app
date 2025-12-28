@@ -53,7 +53,7 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
       await tx.subscription.updateMany({
         where: {
           userId: payment.userId,
-          planId: payment.planId,
+          planId: payment.planId!, // Non-null asserted - we checked above
           status: "ACTIVE",
         },
         data: {
@@ -65,7 +65,7 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
       const subscription = await tx.subscription.create({
         data: {
           userId: payment.userId,
-          planId: payment.planId,
+          planId: payment.planId!,
           status: "ACTIVE",
           paymentId: payment.id,
           startDate: new Date(),

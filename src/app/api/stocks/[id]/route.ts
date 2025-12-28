@@ -47,7 +47,12 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 })
     }
 
-    const updated = await prisma.stock.update({ where: { id }, data: parsed.data })
+    // Convert null values to undefined for Prisma (Prisma doesn't accept null in updates)
+    const updateData = Object.fromEntries(
+      Object.entries(parsed.data).map(([key, value]) => [key, value === null ? undefined : value])
+    )
+
+    const updated = await prisma.stock.update({ where: { id }, data: updateData })
     const subscribed = await hasActiveSubscription(auth.id)
     return NextResponse.json({ stock: redactStock(updated as any, subscribed) })
   } catch (err: any) {

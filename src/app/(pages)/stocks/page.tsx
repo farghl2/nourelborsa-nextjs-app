@@ -26,19 +26,22 @@ const {data} = useSession()
 
   // Calculate percentage and filter stocks with valid price and fairValue
   const stocksWithPercentage: StockWithPercentage[] = stocks
-    .filter(stock =>  stock.fairValue && stock.fairValue > 0)
+    .filter(stock => stock.name && stock.symbol && stock.price != null && stock.fairValue && stock.fairValue > 0)
     .map(stock => ({
       id: stock.id,
-      name: stock.name,
-      symbol: stock.symbol,
-      price: stock.price,
+      name: stock.name!,
+      symbol: stock.symbol!,
+      price: stock.price!,
       fairValue: stock.fairValue!,
       percentage: ((stock.price! - stock.fairValue!) / stock.fairValue!) * 100
     }))
     .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending
   const filterStocks = stocks
+    .filter(stock => stock.price != null && stock.fairValue && stock.fairValue > 0)
     .map(stock => ({
-      id:stock.id,
+      id: stock.id,
+      price: stock.price!,
+      fairValue: stock.fairValue!,
       percentage: ((stock.price! - stock.fairValue!) / stock.fairValue!) * 100
     }))
     .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending

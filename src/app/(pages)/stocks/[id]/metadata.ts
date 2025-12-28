@@ -3,11 +3,11 @@ import { getStockBy } from '@/lib/services/stocks'
 import { generateStockMetadata } from '@/lib/seo/metadata'
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params
+  const { id } = await params
 
   try {
     const stock = await getStockBy(id)

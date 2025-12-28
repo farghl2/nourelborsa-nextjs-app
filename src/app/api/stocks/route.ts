@@ -56,11 +56,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 })
     }
 
+    // Convert null values to undefined for Prisma (Prisma doesn't accept null in create)
+    const createData = Object.fromEntries(
+      Object.entries(parsed.data).map(([key, value]) => [key, value === null ? undefined : value])
+    )
+
     const created = await prisma.stock.create({
       data: {
-        ...parsed.data,
+        ...createData,
         createdById: auth.id,
-      },
+      } as any,
     })
 
     const subscribed = await hasActiveSubscription(auth.id)
