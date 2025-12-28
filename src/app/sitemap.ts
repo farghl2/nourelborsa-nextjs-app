@@ -5,10 +5,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nourelborsa.com'
 
   // Fetch all active stocks for dynamic routes
-  const stocks = await prisma.stock.findMany({
-    where: { active: true },
-    select: { id: true, updatedAt: true },
-  })
+  // Wrapped in try-catch to handle build-time database unavailability
+  let stocks: { id: string; updatedAt: Date }[] = []
+  try {
+    stocks = await prisma.stock.findMany({
+      where: { active: true },
+      select: { id: true, updatedAt: true },
+    })
+  } catch (error) {
+    console.warn('Sitemap: Could not fetch stocks from database, using empty list', error)
+  }
 
   // Static routes
   const staticRoutes: MetadataRoute.Sitemap = [
