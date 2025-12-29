@@ -80,6 +80,7 @@ model SubscriptionPlan {
   durationDays Int
   features     String[]         @default([])
   purificationLimit Int?           @default(0)  //  عدد المرات المسموح بها لاستخدام ميزة "نسبة التطهير
+  aiLimit      Int?             @default(5)    //  عدد مرات استخدام AI للخطة (5 للمجاني)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   createdById  String?
@@ -159,4 +160,5 @@ model Stock {
   expectedFairValueNextYear        Float?    // متوقع للقيمة العادلة للسنة الجديدة
   expectedEarningsPerShare         Float?    // متوقع ربحية السهم
   purificationPercentage           Float?    // نسبة التطهير
+  purificationValue                Float?    // قيمة التطهير (مبلغ ثابت)
 }

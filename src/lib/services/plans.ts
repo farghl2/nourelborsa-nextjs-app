@@ -7,6 +7,7 @@ export type AdminPlan  = {
   price: number
   durationDays: number
   purificationLimit?: number | null
+  aiLimit?: number | null
   active: boolean
   allowedStocks: boolean
   createdAt: string

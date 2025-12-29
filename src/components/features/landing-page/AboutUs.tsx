@@ -12,8 +12,8 @@ const AboutUs = () => {
           <h4 className='text-2xl sm:text-4xl text-black/90 font-bold'> من نحن</h4>
           <div className='h-0.5 w-[20%] bg-primary mx-auto mt-4 rounded-xl' />
         </div>
-        <div className=' flex  flex-col-reverse lg:flex-row gap-12 items-center lg:items-start lg:justify-between'>
-          <FadeInUP>
+        <div className=' flex  flex-col  gap-12 items-center lg:justify-between'>
+          {/* <FadeInUP>
 
             <div
 
@@ -21,12 +21,12 @@ const AboutUs = () => {
 
               <Image src={'/our-story.svg'} alt="our-story" width={400} height={654} className=' ' />
             </div>
-          </FadeInUP>
+          </FadeInUP> */}
           <FadeInUP>
 
             <p
 
-              className='text-center lg:text-end text-lg sm:text-xl text-black/90 leading-7 sm:leading-9 max-w-xl'>
+              className='text-center  text-lg sm:text-xl text-black/90 leading-7 sm:leading-9 max-w-xl'>
               {ABOUTUS}
             </p>
           </FadeInUP>

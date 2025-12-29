@@ -4,9 +4,10 @@ import { z } from "zod"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
-import { useState } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useState, useEffect } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -26,6 +27,16 @@ const registerSchema = z
   })
 
 export default function RegisterPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  
+  // Redirect logged-in users to home
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/")
+    }
+  }, [status, router])
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
@@ -33,6 +44,11 @@ export default function RegisterPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  // Show nothing while checking auth status
+  if (status === "loading" || status === "authenticated") {
+    return null
+  }
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
     try {

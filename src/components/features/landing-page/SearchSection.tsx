@@ -11,15 +11,19 @@ import { ChevronsUpDown } from "lucide-react"
 
 const TITLE  ='اجعل نور مستشارك المالي و الشرعي في البورصة'
 const SearchSection = () => {
-    const isMobile = useIsMobile()
+    // const isMobile = useIsMobile()
     const {stocks, loading} = useAdminStocks();
     const router =useRouter();
     if(loading) return <Loading />
     return (
         <section className='relative overflow-hidden py-12 px-3'
         
-        style={{backgroundImage:`url(${isMobile?'mobile.jpg':'logo-nourborsa.png'})`, backgroundRepeat:'no-repeat',backgroundSize: 'cover',
-  backgroundPosition: 'center'}}
+        style={{backgroundImage:`url(${'logo-nourborsa.png'})`, backgroundRepeat:'no-repeat',backgroundSize: 'cover',
+  backgroundPosition: 'center',
+paddingLeft: '2rem',
+          paddingRight: '2rem',
+          backgroundOrigin: 'content-box',
+}}
             >
             <div className='absolute inset-0 -z-10' />
             <div className='max-w-6xl mx-auto h-[400px] sm:h-[500px] flex flex-col gap-14 justify-center items-center'
@@ -42,7 +46,7 @@ const SearchSection = () => {
                 </div>
 
                 <div dir='rtl' className='flex-1 flex flex-col gap-2 items-center justify-end w-full'>
-                    <CustomCombobox options={stocks} placeholder='ابحث عن سهمك المفضل ....' searchPlaceholder='ابحث ...' onChange={(value) =>router.push(`/stocks/${value}`)} />
+                    <CustomCombobox options={stocks.filter(s => s.active !== false)} placeholder='ابحث عن سهمك المفضل ....' searchPlaceholder='ابحث ...' onChange={(value) =>router.push(`/stocks/${value}`)} />
                 </div>
             </div>
         </section>

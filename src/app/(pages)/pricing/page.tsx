@@ -1,6 +1,6 @@
 "use client";
 import FadeInUP from "@/animations/FadeInUP";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 
@@ -17,7 +17,11 @@ export default function PricesPlanSection() {
     if (error === "payment_failed") {
       toast.error("فشلت عملية الدفع. يرجى المحاولة مرة أخرى.");
     }
+    
+    
   }, [searchParams]);
+
+  const filteredPlans =useMemo(() => plans.filter((p) => p.active), [plans]);
 
   if(loading) return <Loading />
   return (
@@ -34,7 +38,7 @@ export default function PricesPlanSection() {
           </FadeInUP>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((p) => (
+          {filteredPlans.map((p) => (
             <PricePlanCard key={p.id} {...p} />
           ))}
         </div>
@@ -64,7 +68,7 @@ export type PricePlan = {
   highlighted?: boolean;
 };
 
- function PricePlanCard({ id, name, active, durationDays, price, description, features, purificationLimit}: AdminPlan) {
+ function PricePlanCard({ id, name, active, durationDays, price, description, features, purificationLimit, aiLimit}: AdminPlan) {
   const [isPaying, setIsPaying] = useState(false);
   const router = useRouter();
   const handledRef = useRef(false);
@@ -75,6 +79,13 @@ export type PricePlan = {
   const isCurrentPlan = userPlanId === id;
 
   const handlePay = async () => {
+    // Check if user is logged in first
+    if (!session) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      router.push("/login");
+      return;
+    }
+
     try {
       handledRef.current = false;
       setIsPaying(true);
@@ -176,7 +187,7 @@ export type PricePlan = {
 
   return (
     <FadeInUP>
-      <Card className={` border-zinc-200 h-full flex flex-col bg-white`}>
+      <Card className={` border-zinc-200 h-full flex flex-col `}>
         <CardHeader className="text-center">
           <CardTitle className={`text-xl font-bold `}>{name}</CardTitle>
           <p className="text-xs sm:text-sm  text-gray-400 max-w-xs">{description}</p>
@@ -191,6 +202,10 @@ export type PricePlan = {
              <li  className="flex items-start gap-2 text-sm text-zinc-700">
                 <Check className="size-4 text-primary mt-0.5" />
                 <span className="text-end">عدد مرات حساب نسبة التطهير {purificationLimit}</span>
+              </li>
+              <li  className="flex items-start gap-2 text-sm text-zinc-700">
+                <Check className="size-4 text-primary mt-0.5" />
+                <span className="text-end">عدد مرات استخدام AI: {aiLimit ?? 5}</span>
               </li>
             {features!.map((f, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-zinc-700">

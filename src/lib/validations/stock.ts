@@ -83,6 +83,10 @@ export const createStockSchema = z.object({
     z.number(),
     z.string().transform(stringToNumber)
   ]).nullable().optional(),
+  purificationValue: z.union([
+    z.number(),
+    z.string().transform(stringToNumber)
+  ]).nullable().optional(),
 })
 
 export const updateStockSchema = createStockSchema.partial()

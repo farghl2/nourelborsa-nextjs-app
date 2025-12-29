@@ -67,6 +67,14 @@ export default function AdminStocksPage() {
           ? `${r.purificationPercentage.toFixed(2)}%`
           : "—",
     },
+    {
+      key: "purificationValue",
+      label: "قيمة التطهير",
+      render: (r) =>
+        r.purificationValue != null
+          ? r.purificationValue.toFixed(2)
+          : "—",
+    },
      {
       key: "active",
       label: "الحالة",
@@ -192,6 +200,12 @@ export default function AdminStocksPage() {
       placeholder: "0",
     },
     {
+      name: "purificationValue",
+      label: "قيمة التطهير",
+      type: "number",
+      placeholder: "0",
+    },
+    {
       name: "durationDays",
       label: "مدة التوصية (أيام)",
       type: "number",
@@ -300,6 +314,7 @@ export default function AdminStocksPage() {
                 fairValue: undefined,
                 returnOnPrice: undefined,
                 purificationPercentage: undefined,
+                purificationValue: undefined,
                 durationDays: undefined,
                 earningsPerShare: undefined,
                 expectedFairValueNextYear: undefined,

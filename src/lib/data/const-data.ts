@@ -1,6 +1,6 @@
 
 import { ChartNetwork, ChartSpline, DollarSign, Home, Info, Mail ,Glasses, Pin, Rocket, Star} from "lucide-react";
-import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa6";
+import { FaFacebookF, FaTelegram } from "react-icons/fa6";
 
 export const PHONE = "01015058614"
 export const BASE_URL = "https://nourborsa.com"
@@ -107,7 +107,7 @@ export const FAQLIST =[
 ]          
 
 export const SOCIALCARDS =[
-    {icon:FaFacebookF, url:'/'},
-    {icon:FaInstagram, url:'/'},
-    {icon:FaTiktok, url:'/'},
+    {icon:FaFacebookF, url:'https://www.facebook.com/share/17gYzg73N1/?mibextid=wwXIfr'},
+    {icon:FaTelegram, url:'https://t.me/nourboursa'},
+
 ]

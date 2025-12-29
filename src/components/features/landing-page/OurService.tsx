@@ -55,7 +55,7 @@ const OurServiceItem = ({ title, description, icon, index }: OurServiceItemProps
     
     >
       <Card
-        className="w-[250px] h-[300px]  text-center px-4 
+        className="w-[300px] h-[300px]  text-center px-4 
                    hover:bg-secondary hover:text-white 
                    transition-all cursor-pointer rounded-xl py-4"
         onMouseEnter={() => {

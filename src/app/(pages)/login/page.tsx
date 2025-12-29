@@ -4,10 +4,11 @@ import { z } from "zod"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
-import { useState } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useState, useEffect } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -21,12 +22,27 @@ const loginSchema = z.object({
 })
 
 export default function LoginPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  
+  // Redirect logged-in users to home
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/")
+    }
+  }, [status, router])
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
     mode: "onTouched",
   })
   const [showPassword, setShowPassword] = useState(false)
+
+  // Show nothing while checking auth status
+  if (status === "loading" || status === "authenticated") {
+    return null
+  }
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {

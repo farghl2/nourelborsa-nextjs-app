@@ -95,9 +95,15 @@ export async function POST(req: Request) {
       },
     })
 
-    // Update user's purification count using centralized utility
+    // Update user's purification count and reset AI usage count
     const { resetPurificationCount } = await import("@/lib/purification")
     await resetPurificationCount(user.id, plan.purificationLimit)
+    
+    // Reset AI usage count for the new subscription
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { aiUsageCount: 0 }
+    })
 
     const result = {
       id: created.id,

@@ -34,40 +34,40 @@ export default function ProfilePage() {
   const daysRemaining = getDaysRemaining(subscriptionEndDate)
 
   return (
-    <div dir="rtl" className="container mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">الملف الشخصي</h1>
-      <p className="text-muted-foreground mt-2">معلومات حسابك الحالية.</p>
+    <div dir="rtl" className="container mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">الملف الشخصي</h1>
+      <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">معلومات حسابك الحالية.</p>
 
-      <div className="mt-8 rounded-lg border p-6 grid gap-6">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">الاسم</span>
-          <span className="font-medium">{name}</span>
+      <div className="mt-6 sm:mt-8 rounded-lg border p-4 sm:p-6 grid gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span className="text-xs sm:text-sm text-muted-foreground">الاسم</span>
+          <span className="font-medium text-sm sm:text-base">{name}</span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">البريد الإلكتروني</span>
-          <span className="font-medium">{email}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span className="text-xs sm:text-sm text-muted-foreground">البريد الإلكتروني</span>
+          <span className="font-medium text-sm sm:text-base break-all">{email}</span>
         </div>
         {role !== "USER" && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">الدور</span>
-            <Badge variant="secondary" className="font-medium text-white">{role}</Badge>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+            <span className="text-xs sm:text-sm text-muted-foreground">الدور</span>
+            <Badge variant="secondary" className="font-medium text-white w-fit">{role}</Badge>
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">خطة الاشتراك الحالية</span>
-          <Badge className="font-medium">{plan}</Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span className="text-xs sm:text-sm text-muted-foreground">خطة الاشتراك الحالية</span>
+          <Badge className="font-medium w-fit">{plan}</Badge>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">الحالة</span>
-          <Badge variant="outline" className="font-medium">{acctStatus}</Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span className="text-xs sm:text-sm text-muted-foreground">الحالة</span>
+          <Badge variant="outline" className="font-medium w-fit">{acctStatus}</Badge>
         </div>
         
         {/* Show subscription end date and days remaining if available */}
         {subscriptionEndDate && daysRemaining !== null && (
           <>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">تاريخ انتهاء الاشتراك</span>
-              <span className="font-medium text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+              <span className="text-xs sm:text-sm text-muted-foreground">تاريخ انتهاء الاشتراك</span>
+              <span className="font-medium text-xs sm:text-sm">
                 {new Date(subscriptionEndDate).toLocaleDateString('ar-EG', {
                   year: 'numeric',
                   month: 'long',
@@ -75,15 +75,15 @@ export default function ProfilePage() {
                 })}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">الأيام المتبقية</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+              <span className="text-xs sm:text-sm text-muted-foreground">الأيام المتبقية</span>
               <Badge 
                 variant={
                   daysRemaining > 14 ? "default" : 
                   daysRemaining > 7 ? "secondary" : 
                   "destructive"
                 } 
-                className="font-medium"
+                className="font-medium w-fit"
               >
                 {daysRemaining} {daysRemaining === 1 ? "يوم" : "أيام"}
               </Badge>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
           </>
         )}
 
-        <div className="pt-2 flex items-center justify-end gap-3">
+        <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
           {user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT' ? <Button variant="outline" className="hover:text-white" asChild>
             <a href="/admin">لوحة التحكم</a>
           </Button>:

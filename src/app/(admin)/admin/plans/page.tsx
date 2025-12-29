@@ -38,10 +38,11 @@ export default function AdminPlansPage() {
 
   const fields: FieldDef[] = [
     { name: "name", label: "الاسم", placeholder: "اسم الخطة" },
-    { name: "description", label: "الوصف", placeholder: "وصف الباقة" },
+    { name: "description", label: "الوصف", type: "textarea", placeholder: "وصف الباقة", fullWidth: true },
     { name: "price", label: "السعر", type: "number", placeholder: "0" },
     { name: "durationDays", label: "المدة بالأيام", type: "number", placeholder: "30" },
     { name: "purificationLimit", label: "حد مرات التطهير", type: "number", placeholder: "0" },
+    { name: "aiLimit", label: "حد استخدام AI", type: "number", placeholder: "5" },
     {
       name: "active",
       label: "مفعلة؟",
@@ -116,7 +117,8 @@ export default function AdminPlansPage() {
           features: editing?.features || [],
           active: editing?.active ?? true,
           durationDays: editing?.durationDays || 30,
-          purificationLimit: editing?.purificationLimit || 0
+          purificationLimit: editing?.purificationLimit || 0,
+          aiLimit: editing?.aiLimit ?? 5
         }}
         onSubmit={onSubmit}
       />

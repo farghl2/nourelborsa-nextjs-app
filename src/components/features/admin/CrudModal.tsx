@@ -17,11 +17,12 @@ import { cn } from "@/lib/utils"
 export type FieldDef = {
   name: string
   label: string
-  type?: "text" | "email" | "number" | "select" | "array" | "switch" | "multiselect"
+  type?: "text" | "email" | "number" | "select" | "array" | "switch" | "multiselect" | "textarea"
   placeholder?: string
   options?: { label: string; value: string }[]
   itemType?: string
   itemPlaceholder?: string
+  fullWidth?: boolean  // Makes field span full width (2 columns)
 }
 
 export type CrudModalProps<T extends Record<string, any>> = {
@@ -61,7 +62,7 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                   control={form.control}
                   name={f.name as any}
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className={f.fullWidth || f.type === "array" || f.type === "textarea" ? "sm:col-span-2" : ""}>
                       <FormLabel>{f.label}</FormLabel>
                       <FormControl>
                         {f.type === "select" ? (
@@ -75,11 +76,14 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                             />
                           </div>
                         ) : f.type === "array" ? (
-                          <div className="w-full space-y-2">
+                          <div className="w-full space-y-2 p-3 bg-background  rounded-lg border">
+                            {(field.value || []).length === 0 && (
+                              <p className="text-sm text-muted-foreground text-center py-2">لا توجد عناصر بعد</p>
+                            )}
                             {(field.value || []).map((item: string, index: number) => (
-                              <div key={index} className="w-full flex gap-2">
+                              <div key={index} className="flex gap-2 items-center">
+                                <span className="text-xs text-muted-foreground w-6">{index + 1}.</span>
                                 <Input
-                                
                                   type="text"
                                   value={item}
                                   onChange={(e) => {
@@ -88,12 +92,13 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                                     field.onChange(newItems);
                                   }}
                                   placeholder={f.itemPlaceholder || f.placeholder}
-                                  className="flex-1 sm:w-[400px]"
+                                  className="flex-1"
                                 />
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                   onClick={() => {
                                     const newItems = field.value.filter((_: any, i: number) => i !== index);
                                     field.onChange(newItems);
@@ -107,6 +112,7 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                               type="button"
                               variant="outline"
                               size="sm"
+                              className="w-full mt-2"
                               onClick={() => {
                                 field.onChange([...(field.value || []), ""]);
                               }}
@@ -114,8 +120,19 @@ export default function CrudModal<T extends Record<string, any>>({ open, setOpen
                               + إضافة عنصر
                             </Button>
                           </div>
+                        ) : f.type === "textarea" ? (
+                          <textarea
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder={f.placeholder}
+                            {...field}
+                          />
                         ) : (
-                          <Input  type={f.type || "text"} placeholder={f.placeholder} {...field} />
+                          <Input  
+                            type={f.type || "text"} 
+                            step={f.type === "number" ? "any" : undefined}
+                            placeholder={f.placeholder} 
+                            {...field} 
+                          />
                         )}
                       </FormControl>
                       <FormMessage />

@@ -13,9 +13,9 @@ const SocialCards = () => {
         
         <div className="flex gap-5 items-center justify-center my-4">
             {SOCIALCARDS.map((item,index)=>
-            <Button asChild >
+            <Button key={index} asChild >
 
-            <Link   target='_blank' key={index} href={item.url} className={`${cn(` rounded-full text-2xl  p-4 `)} `}>
+            <Link   target='_blank'  href={item.url} className={`${cn(` rounded-full text-2xl  p-4 `)} `}>
               <item.icon  className="text-2xl" />
             </Link>
             </Button>

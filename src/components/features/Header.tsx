@@ -137,7 +137,7 @@ const MobilleNav = () => {
           </li>
         ))}
       </ul>
-      {status === "authenticated" && (
+      {status === "authenticated" ? (
         <div className="mt-4 px-6 w-full">
           <Button className="w-full flex items-center gap-2" variant="outline" onClick={async () => {
             await signOut({ redirect: false })
@@ -146,6 +146,17 @@ const MobilleNav = () => {
             <LogOut className="h-4 w-4" />
             تسجيل الخروج
           </Button>
+        </div>
+      ) : (
+        <div className="mt-4 px-6 w-full">
+          <SheetClose asChild>
+            <Button asChild className="w-full flex items-center gap-2" variant="default">
+              <Link href="/login">
+                <User className="h-4 w-4" />
+                تسجيل الدخول
+              </Link>
+            </Button>
+          </SheetClose>
         </div>
       )}
       <div className="mt-5 px-6 ">

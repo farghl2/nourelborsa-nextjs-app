@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card"
 
 
 
-export default function PurificationCalculator({ triggerLabel = "احسب نسبة تطهيرك الآن" , purificationPercentage}: { triggerLabel?: string, purificationPercentage: number }) {
+export default function PurificationCalculator({ triggerLabel = "احسب نسبة تطهيرك الآن" , purificationPercentage,purificationValue }: { triggerLabel?: string, purificationPercentage: number , purificationValue: number}) {
   const [open, setOpen] = useState(false)
   const { checkAccess, isLoading, data, error, reset } = usePurificationAccess()
 
@@ -44,14 +44,14 @@ export default function PurificationCalculator({ triggerLabel = "احسب نسب
   const [result2, setResult2] = useState<string | undefined>()
   const handelPurification = () => {
     if (shares === undefined || days === undefined) return;
-    const calculation = purificationPercentage/100 * Number(shares) * Number(days);
+    const calculation = purificationValue * Number(shares) * Number(days);
     setResult(calculation.toString());
     
   };
 
   const handelPurification2 =()=>{
-    if (purificationAmount === undefined || profit === undefined) return;
-    const calculation = (Number(profit) / Number(purificationAmount)) * 100;
+    if (profit === undefined) return;
+    const calculation = (Number(profit) *purificationPercentage);
     setResult2(calculation.toString());
   }
   return (
@@ -107,12 +107,7 @@ export default function PurificationCalculator({ triggerLabel = "احسب نسب
             </p>
           </div>
           <div className="flex items-center justify-center gap-4">
-            <Input 
-              placeholder="مبلغ تطهيرك" 
-              type="text" 
-              value={purificationAmount}
-              onChange={(e) => setPurificationAmount(e.target.value)}
-            />
+           
             <Input 
               placeholder="مقدار ربحك" 
               type="text"
@@ -120,7 +115,7 @@ export default function PurificationCalculator({ triggerLabel = "احسب نسب
               onChange={(e) => setProfit(e.target.value)}
             />
           </div>
-          {result2 !== undefined  && <p className="text-center">{`نسبة التطهير: ${Number(result2).toFixed(2)}%`}</p>}
+          {result2 !== undefined  && <p className="text-center">{`مبلغ التطهير: ${Number(result2).toFixed(2)} جنية`}</p>}
           <Button onClick={handelPurification2} className="mt-4 w-full">احسب نسبة التطهير</Button>
         </Card>
        </div>

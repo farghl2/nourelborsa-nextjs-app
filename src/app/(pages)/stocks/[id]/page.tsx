@@ -84,27 +84,35 @@ export default function StockDetailsPage() {
         )}
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-3">
+        {/* Company Activity Box - Prominent at the top */}
+        {stock?.companyActivity && (
+          <Card >
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">نشاط الشركة:</span>
+                  <span className="text-base sm:text-lg font-semibold">{stock.companyActivity}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{stock?.updatedAt ? new Date(stock.updatedAt).toLocaleString() : ''}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-4 flex-wrap">
-              <p>
-
-              نشاط الشركة: {stock?.companyActivity}
-              </p>
-              <p className="text-sm text-muted-foreground">{stock?.updatedAt ? new Date(stock.updatedAt).toLocaleString() : ''}</p>
-
-            </CardTitle>
+            <CardTitle>البيانات الشرعية</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Prohibited Revenue - Dual Display */}
               <div className="rounded-lg  border overflow-hidden">
-                <div className="text-sm text-muted-foreground text-center pt-4 px-2 mb-3">الدخل المحظور</div>
+                <div className="text-xs sm:text-sm text-muted-foreground text-center pt-3 px-2 mb-2">الدخل المحظور</div>
                 <div className="flex h-16">
                   {/* First Value */}
                   <div 
-                    className={`flex-1 flex items-center justify-center text-xl font-semibold ${
+                    className={`flex-1 flex items-center justify-center text-sm sm:text-lg font-bold ${
                       (() => {
                         const numValue = categoryToNumber(stock?.prohibitedRevenuePercentage);
                         if (numValue === null) return 'bg-secondary/20';
@@ -122,7 +130,7 @@ export default function StockDetailsPage() {
                   
                   {/* Second Value */}
                   <div 
-                    className={`flex-1 flex items-center justify-center text-xl font-semibold ${
+                    className={`flex-1 flex items-center justify-center text-sm sm:text-lg font-bold ${
                       (() => {
                         const numValue = categoryToNumber(stock?.prohibitedRevenuePercentageSecondary);
                         if (numValue === null) return 'bg-secondary/20';
@@ -146,8 +154,8 @@ export default function StockDetailsPage() {
                   ? 'bg-green-500/20'
                   : 'bg-red-500/20'
               }`}>
-                <div className="text-sm text-muted-foreground">القروض الربوية</div>
-                <div className={`mt-1 text-xl font-semibold ${
+                <div className="text-xs sm:text-sm text-muted-foreground">القروض الربوية</div>
+                <div className={`mt-1 text-lg sm:text-2xl font-bold ${
                   stock?.interestBearingLoansPercentage !== null && stock?.interestBearingLoansPercentage !== undefined
                     ? stock.interestBearingLoansPercentage < 30
                       ? 'text-green-700 dark:text-green-400'
@@ -168,8 +176,8 @@ export default function StockDetailsPage() {
                   ? 'bg-green-500/20'
                   : 'bg-red-500/20'
               }`}>
-                <div className="text-sm text-muted-foreground">الايدعات الربوية</div>
-                <div className={`mt-1 text-xl font-semibold ${
+                <div className="text-xs sm:text-sm text-muted-foreground">الايداعات الربوية</div>
+                <div className={`mt-1 text-lg sm:text-2xl font-bold ${
                   stock?.interestBearingDepositsPercentage !== null && stock?.interestBearingDepositsPercentage !== undefined
                     ? stock.interestBearingDepositsPercentage < 30
                       ? 'text-green-700 dark:text-green-400'
@@ -190,8 +198,8 @@ export default function StockDetailsPage() {
                   ? 'bg-green-500/20'
                   : 'bg-red-500/20'
               }`}>
-                <div className="text-sm text-muted-foreground">الاصول السائلة</div>
-                <div className={`mt-1 text-xl font-semibold ${
+                <div className="text-xs sm:text-sm text-muted-foreground">الأصول السائلة</div>
+                <div className={`mt-1 text-lg sm:text-2xl font-bold ${
                   stock?.assetsPercentage !== null && stock?.assetsPercentage !== undefined
                     ? stock.assetsPercentage < 70
                       ? 'text-green-700 dark:text-green-400'
@@ -223,8 +231,8 @@ export default function StockDetailsPage() {
                 { label: "القيمة السوقية", value: stock?.marketCapitalization },
                 { label: " اجمالي الاصول", value: stock?.totalAssets },
               ].map((t) => (
-                <div key={t.label} className="rounded-md border p-4 text-center">
-                  <div className="text-xs text-muted-foreground">{t.label}</div>
+                <div key={t.label} className="rounded-md border p-3 sm:p-4 text-center">
+                  <div className="text-xs sm:text-sm text-muted-foreground mb-1">{t.label}</div>
                   {t.value === null || typeof t.value === "undefined" ? (
                     <button
                       type="button"
@@ -236,7 +244,7 @@ export default function StockDetailsPage() {
                       <span>اشترك لعرض البيانات</span>
                     </button>
                   ) : (
-                    <div className="text-xl font-semibold">{String(t.value)}</div>
+                    <div className="text-lg sm:text-xl font-bold">{String(t.value)}</div>
                   )}
                 </div>
               ))}
@@ -251,9 +259,9 @@ export default function StockDetailsPage() {
           {/* {stock?.purificationPercentage !== undefined && stock?.purificationPercentage !== null && (
             <p className="text-sm">نسبة التطهير: {stock.purificationPercentage}%</p>
           )} */}
-          <PurificationCalculator purificationPercentage={stock?.purificationPercentage ?? 0}/>
+          <PurificationCalculator purificationValue={stock?.purificationValue ?? 0} purificationPercentage={stock?.purificationPercentage ?? 0}/>
         </div>
-        <p className="font-semibold text-lg">اجعل استثمارك حلال 100%</p>
+        <p className="font-bold text-base sm:text-lg">اجعل استثمارك حلال 100%</p>
 
         </div>
       </div>

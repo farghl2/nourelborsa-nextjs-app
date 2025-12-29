@@ -24,47 +24,47 @@ const {data} = useSession()
 
   if (loading) return <Loading />;
 
-  // Calculate percentage and filter stocks with valid price and fairValue
+  // Calculate percentage and filter stocks with valid price and fairValue (only active stocks)
   const stocksWithPercentage: StockWithPercentage[] = stocks
-    .filter(stock => stock.name && stock.symbol && stock.price != null && stock.fairValue && stock.fairValue > 0)
+    .filter(stock => stock.active !== false && stock.name && stock.symbol && stock.price != null && stock.fairValue && stock.fairValue > 0)
     .map(stock => ({
       id: stock.id,
       name: stock.name!,
       symbol: stock.symbol!,
       price: stock.price!,
       fairValue: stock.fairValue!,
-      percentage: ((stock.price! - stock.fairValue!) / stock.fairValue!) * 100
+      percentage: ((stock.fairValue! - stock.price!) / stock.price!) * 100
     }))
     .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending
+
+    console.log(stocksWithPercentage[0])
   const filterStocks = stocks
-    .filter(stock => stock.price != null && stock.fairValue && stock.fairValue > 0)
+    .filter(stock => stock.active !== false && stock.price != null && stock.fairValue && stock.fairValue > 0)
     .map(stock => ({
       id: stock.id,
       price: stock.price!,
       fairValue: stock.fairValue!,
-      percentage: ((stock.price! - stock.fairValue!) / stock.fairValue!) * 100
+      percentage: ((stock.price! - stock.fairValue!) / stock.price!) * 100
     }))
     .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending
 
   const getPercentageColor = (percentage: number) => {
-    if (percentage > 10) return 'text-red-600 bg-red-50';
-    if (percentage > 5) return 'text-orange-600 bg-orange-50';
-    if (percentage > 0) return 'text-yellow-600 bg-yellow-50';
-    if (percentage > -5) return 'text-green-600 bg-green-50';
+    if (percentage <0) return 'text-red-600 bg-red-50';
+    if (percentage > 0) return 'text-green-600 bg-green-50';
     return 'text-emerald-600 bg-emerald-50';
   };
 
   const getPercentageText = (percentage: number) => {
-    if (percentage > 0) return `+${percentage.toFixed(2)}%`;
+    if (percentage < 0) return `${percentage.toFixed(2)}%`;
     return `${percentage.toFixed(2)}%`;
   };
 
   return (
-    <div className="min-h-screen from-blue-50 to-indigo-100 p-4" dir="rtl">
+    <div className="min-h-screen from-blue-50 to-indigo-100 p-2 sm:p-4" dir="rtl">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">تحليل الأسهم</h1>
-          <p className="text-gray-600">نسبة السعر إلى القيمة العادلة للأسهم المتاحة</p>
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-2">تحليل الأسهم</h1>
+          <p className="text-sm sm:text-base text-gray-600">نسبة السعر إلى القيمة العادلة للأسهم المتاحة</p>
         </div>
 
         {data && data.user.allowedStocks ===true?  
@@ -77,47 +77,48 @@ const {data} = useSession()
         
                     <div className="w-full space-y-2">
                       <div>
-                        <span className="text-sm text-gray-500">اسم السهم:</span>
+                        <span className="text-xs sm:text-sm text-gray-500">اسم السهم:</span>
                         <div className={`${data?.user.allowedStocks? 'blur-none':'blur-sm'}  transition-all duration-300 cursor-pointer}`}>
-                          <h3 className="text-lg font-semibold text-gray-800">{stock.name}</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stock.name}</h3>
                         </div>
                       </div>
                       
-                      <div className="w-full flex justify-between items-center">
+                      <div className="w-full grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 items-center">
                         <div>
-                          <span className="text-sm text-gray-500">الرمز:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">الرمز:</span>
                           <div className={`${data?.user.allowedStocks? 'blur-none':'blur-sm'} transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">{stock.symbol}</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">{stock.symbol}</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500">السعر الحالي:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">السعر الحالي:</span>
                           <div className={`${data?.user.allowedStocks? 'blur-none':'blur-sm'} transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">{stock.price.toFixed(2)}</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">{stock.price.toFixed(2)}</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500">القيمة العادلة:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">القيمة العادلة:</span>
                           <div className={`${data?.user.allowedStocks? 'blur-none':'blur-sm'} transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">{stock.fairValue.toFixed(2)}</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">{stock.fairValue.toFixed(2)}</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500">الفرق:</span>
-                          <p className=" font-medium text-gray-700">
+                          <span className="text-xs sm:text-sm text-gray-500">الفرق:</span>
+                          <p className="text-sm sm:text-base font-medium text-gray-700">
                             {(stock.price - stock.fairValue).toFixed(2)}
                           </p>
                         </div>
-                  <div className="ml-4">
-                    <Badge 
-                      className={`text-lg px-4 py-2 font-bold ${getPercentageColor(stock.percentage)}`}
-                    >
-                      {getPercentageText(stock.percentage)}
-                    </Badge>
-                  </div>
+
+                        <div className="col-span-2 sm:col-span-1 flex justify-center sm:justify-end">
+                          <Badge 
+                            className={`text-sm sm:text-lg px-3 sm:px-4 py-1 sm:py-2 font-bold ${getPercentageColor(stock.percentage)}`}
+                          >
+                            {getPercentageText(stock.percentage)}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                 </div>
@@ -146,42 +147,42 @@ const {data} = useSession()
                         </div>
                       </div>
                       
-                      <div className="w-full flex justify-between items-center">
+                      <div className="w-full grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 items-center">
                         <div>
-                          <span className="text-sm text-gray-500">الرمز:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">الرمز:</span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">jjj</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">XXX</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500">السعر الحالي:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">السعر الحالي:</span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">jjjfff</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">XX.XX</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500">القيمة العادلة:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">القيمة العادلة:</span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
-                            <p className="font-medium text-gray-700">jjjfff</p>
+                            <p className="text-sm sm:text-base font-medium text-gray-700">XX.XX</p>
                           </div>
                         </div>
                         
-                       {stocks && <div>
-                          <span className="text-sm text-gray-500">الفرق:</span>
-                          <p className="blur-sm font-medium text-gray-700">
+                        <div>
+                          <span className="text-xs sm:text-sm text-gray-500">الفرق:</span>
+                          <p className="blur-sm text-sm sm:text-base font-medium text-gray-700">
                             {(stock.price! - stock.fairValue!).toFixed(2)}
                           </p>
-                        </div>}
-                        {stocks &&
-                  <div className="ml-4">
-                    <Badge 
-                      className={` text-lg px-4 py-2 font-bold ${getPercentageColor(stock.percentage!)}`}
-                    >
-                      {getPercentageText(stock.percentage!)}
-                    </Badge>
-                  </div>}
+                        </div>
+
+                        <div className="col-span-2 sm:col-span-1 flex justify-center sm:justify-end">
+                          <Badge 
+                            className={`text-sm sm:text-lg px-3 sm:px-4 py-1 sm:py-2 font-bold ${getPercentageColor(stock.percentage!)}`}
+                          >
+                            {getPercentageText(stock.percentage!)}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                 </div>

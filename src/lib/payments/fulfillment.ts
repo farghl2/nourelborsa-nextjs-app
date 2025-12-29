@@ -74,10 +74,13 @@ export async function fulfillPayment(paymentIdOrReference: string, transactionId
         },
       });
 
-      // Update purification count
+      // Update purification count and reset AI usage count
       await tx.user.update({
         where: { id: payment.userId },
-        data: { purificationCount: plan.purificationLimit ?? 0 },
+        data: { 
+          purificationCount: plan.purificationLimit ?? 0,
+          aiUsageCount: 0 // Reset AI usage when new subscription starts
+        },
       });
 
       return { payment: updatedPayment, subscription };

@@ -44,10 +44,13 @@ export async function POST(req: Request) {
         },
       })
 
-      // Update user's purificationCount to the plan's purificationLimit
+      // Update user's purificationCount and reset aiUsageCount
       await prisma.user.update({
         where: { id: payment.userId },
-        data: { purificationCount: plan.purificationLimit ?? 0 }
+        data: { 
+          purificationCount: plan.purificationLimit ?? 0,
+          aiUsageCount: 0 // Reset AI usage when new subscription starts
+        }
       })
 
       return NextResponse.json({ payment: updatedPayment, subscription: sub }, { status: 200 })
