@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { BASE_URL } from "@/lib/data/const-data"
 
 // Helper function to calculate days remaining
 function getDaysRemaining(endDate: string | null | undefined): number | null {
@@ -105,7 +106,8 @@ export default function ProfilePage() {
               } catch (e) {
                 console.error("Failed to clear auth_token on logout", e)
               }
-              await signOut({ callbackUrl: "/" })
+              await signOut({ redirect: false })
+              window.location.href = BASE_URL
             }}
           >
             تسجيل الخروج

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { headerData, PHONE } from "@/lib/data/const-data";
+import { headerData, PHONE, BASE_URL } from "@/lib/data/const-data";
 import { useSession, signOut } from "next-auth/react";
 
 
@@ -139,7 +139,10 @@ const MobilleNav = () => {
       </ul>
       {status === "authenticated" && (
         <div className="mt-4 px-6 w-full">
-          <Button className="w-full flex items-center gap-2" variant="outline" onClick={() => signOut({ callbackUrl: "/" })}>
+          <Button className="w-full flex items-center gap-2" variant="outline" onClick={async () => {
+            await signOut({ redirect: false })
+            window.location.href = BASE_URL
+          }}>
             <LogOut className="h-4 w-4" />
             تسجيل الخروج
           </Button>

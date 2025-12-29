@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { BASE_URL } from "@/lib/data/const-data"
 
 
 const loginSchema = z.object({
@@ -42,9 +43,10 @@ export default function LoginPage() {
       }
 
       if (result?.url) {
-        window.location.href = result.url
+        // window.location.href = result.url
+        window.location.href = BASE_URL
       } else {
-        window.location.href = "/"
+        window.location.href = BASE_URL
       }
     } catch (error) {
       console.error("login submit error", error)

@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { BASE_URL } from "@/lib/data/const-data"
 
 const registerSchema = z
   .object({
@@ -71,9 +72,10 @@ export default function RegisterPage() {
       }
 
       if (result?.url) {
-        window.location.href = result.url
+        // window.location.href = result.url
+        window.location.href = `${BASE_URL}/profile`
       } else {
-        window.location.href = "/profile"
+        window.location.href = `${BASE_URL}/profile`
       }
     } catch (error) {
       console.error("register submit error", error)

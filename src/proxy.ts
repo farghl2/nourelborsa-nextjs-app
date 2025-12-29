@@ -11,18 +11,8 @@ export async function proxy(req: NextRequest) {
   // If it's neither API nor admin page, let it pass
   if (!isApi && !isAdminPage) return NextResponse.next()
 
-  // Public API routes (do not require auth)
-  const publicMatchers = [
-    /^\/api\/auth\//,      // register, login, next-auth, verify-email, resend-code, forgot-password, reset-password
-    /^\/api\/stocks(?:\/|$)/,     // stocks (with or without trailing slash)
-    /^\/api\/subscription-plans(?:\/|$)/,     // subscription-plans (with or without trailing slash)
-    /^\/api\/webhooks\//,  // webhooks
-  ]
-  const isPublic = publicMatchers.some((re) => re.test(pathname))
-
-  // Protect both private APIs and /admin pages
-  if (!isPublic || isAdminPage) {
-    // Try custom auth_token first (from /api/auth/login custom route)
+  if (isApi || isAdminPage) {
+    // 1. Try custom auth_token first
     const customToken = req.cookies.get("auth_token")?.value
     
     let userId: string | null = null
@@ -37,10 +27,9 @@ export async function proxy(req: NextRequest) {
       }
     }
     
-    // If no custom token, try NextAuth session token
+    // 2. If no custom token, try NextAuth session token
     if (!userId) {
       try {
-        // Use NextAuth's getToken to decrypt the session JWT
         const token = await getToken({ 
           req, 
           secret: process.env.NEXTAUTH_SECRET 
@@ -49,27 +38,39 @@ export async function proxy(req: NextRequest) {
         if (token) {
           userId = (token.id as string) || token.sub || null
           userRole = (token.role as string) || null
-          console.log("[Proxy] NextAuth token found:", { userId, userRole })
         }
       } catch (error) {
         console.error("[Proxy] Error decoding NextAuth token:", error)
       }
     }
+
+    // 3. Define Public Matchers
+    const publicMatchers = [
+        /^\/api\/auth\//,      // register, login, next-auth, verify-email, resend-code, forgot-password, reset-password
+        /^\/api\/stocks(?:\/|$)/,     // stocks (with or without trailing slash)
+        /^\/api\/subscription-plans(?:\/|$)/,     // subscription-plans (with or without trailing slash)
+        /^\/api\/webhooks\//,  // webhooks
+    ]
+    const isPublic = publicMatchers.some((re) => re.test(pathname))
     
-    // No valid auth found
-    if (!userId) {
-      console.log("[Proxy] No valid auth, redirecting to login. Path:", pathname)
+    // 4. Enforce Auth for Private Routes (if not public and no user)
+    if (!isPublic && !userId) {
+      if (isAdminPage) {
+           return NextResponse.redirect(new URL("/login", req.url))
+      }
       return NextResponse.redirect(new URL("/login", req.url))
     }
 
-    // Inject user headers for downstream handlers (used by getAuthUser)
+    // 5. Inject Headers (if user found)
     const requestHeaders = new Headers(req.headers)
-    requestHeaders.set("x-user-id", userId)
-    if (userRole) requestHeaders.set("x-user-role", String(userRole))
+    if (userId) {
+        requestHeaders.set("x-user-id", userId)
+        if (userRole) requestHeaders.set("x-user-role", String(userRole))
+    }
 
     const role = String(userRole || "")
 
-    // Restrict /admin pages to ADMIN and ACCOUNTANT, redirect to home if unauthorized
+    // 6. Admin Page Access Control
     if (isAdminPage) {
       if (!["ADMIN", "ACCOUNTANT"].includes(role)) {
         console.log("[Proxy] User role not authorized for admin:", role)
@@ -79,7 +80,7 @@ export async function proxy(req: NextRequest) {
       }
     }
 
-    // Enforce ADMIN only for subscription-plans write operations
+    // 7. Special Case: subscription-plans write operations
     const isSubscriptionPlans = pathname.startsWith("/api/subscription-plans")
     const isWrite = req.method === "POST" || req.method === "PATCH" || req.method === "DELETE"
     if (isSubscriptionPlans && isWrite && userRole !== "ADMIN") {

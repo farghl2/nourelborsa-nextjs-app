@@ -1,7 +1,7 @@
 import HeroSection from "@/components/features/landing-page/HeroSection";import SearchSection from "@/components/features/landing-page/SearchSection";
 import OurService from "@/components/features/landing-page/OurService";
 
-import FaqSection from "@/components/features/landing-page/FagSection";
+import FaqSection from "@/components/features/landing-page/FaqSection";
 import AboutUs from "@/components/features/landing-page/AboutUs";
 
 export default function Home() {

@@ -26,12 +26,12 @@ const FaqSection = () => {
         
         
         
-      <AccordionItem  value={`item-${index+1}`}>
-        <AccordionTrigger >{item.question}</AccordionTrigger>
+      <AccordionItem key={index} value={`item-${index+1}`}>
+        <AccordionTrigger className="text-right">{item.question}</AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>
+          <div className="whitespace-pre-line text-muted-foreground leading-7 text-right">
            {item.answer}
-          </p>
+          </div>
         </AccordionContent>
       </AccordionItem>
      
