@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 
     if (isSuccess) {
         await fulfillPayment(String(MerchantReference));
-        return NextResponse.redirect(new URL(`/payments/success?ref=${MerchantReference}`, req.url));
+        return NextResponse.redirect(new URL(`/`, req.url));
     }
 
     await failPayment(String(MerchantReference));

@@ -16,7 +16,7 @@ const SearchSection = () => {
     const router =useRouter();
     if(loading) return <Loading />
     return (
-        <section className='relative overflow-hidden py-12 px-3'
+        <section className='relative overflow-hidden py-12 px-2'
         
         style={{backgroundImage:`url(${'logo-nourborsa.png'})`, backgroundRepeat:'no-repeat',backgroundSize: 'cover',
   backgroundPosition: 'center',

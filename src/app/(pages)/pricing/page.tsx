@@ -144,12 +144,14 @@ export type PricePlan = {
         DefaultRoute: "Main",
         ReturnURL: window.location.origin + "/api/webhooks/paysky", 
 
-        completeCallback: (response: any) => {
+        completeCallback: async (response: any) => {
           if (handledRef.current) return;
           handledRef.current = true;
           console.log("Payment Success", response);
           toast.success("تمت عملية الدفع بنجاح");
-          window.location.href = `/api/webhooks/paysky?Success=true&MerchantReference=${merchantReference}`;
+          // Fulfill the payment first, then redirect to home
+          await fetch(`/api/webhooks/paysky?Success=true&MerchantReference=${merchantReference}`);
+          window.location.href = `/`;
         },
         errorCallback: (error: any) => {
           if (handledRef.current) return;

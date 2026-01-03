@@ -10,7 +10,19 @@ export async function checkPurificationAccess(): Promise<PurificationAccessRespo
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
+      redirect: "manual", // Don't follow redirects automatically
     })
+
+    // Check for redirect (middleware redirecting to login)
+    if (response.type === "opaqueredirect" || response.status === 0) {
+      throw new Error("UNAUTHORIZED")
+    }
+
+    // Check if redirected (3xx status)
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error("UNAUTHORIZED")
+    }
 
     // Check if response is HTML (redirect to login page)
     const contentType = response.headers.get("content-type")
@@ -18,13 +30,16 @@ export async function checkPurificationAccess(): Promise<PurificationAccessRespo
       throw new Error("UNAUTHORIZED")
     }
 
+    // Check for 401 before trying to parse JSON
+    if (response.status === 401) {
+      throw new Error("UNAUTHORIZED")
+    }
+
     const result = await response.json()
 
     if (!response.ok) {
       // Handle different error cases
-      if (response.status === 401) {
-        throw new Error("UNAUTHORIZED")
-      } else if (response.status === 402) {
+      if (response.status === 402) {
         throw new Error(result.message || "NO_ATTEMPTS")
       } else {
         throw new Error(result.message || "API_ERROR")

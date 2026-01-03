@@ -8,6 +8,7 @@ import Loading from '@/app/loading';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 
 interface StockWithPercentage {
   id: string;
@@ -63,8 +64,8 @@ const {data} = useSession()
     <div className="min-h-screen from-blue-50 to-indigo-100 p-2 sm:p-4" dir="rtl">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-2">تحليل الأسهم</h1>
-          <p className="text-sm sm:text-base text-gray-600">نسبة السعر إلى القيمة العادلة للأسهم المتاحة</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-2">افضل الأسهم ماليا</h1>
+          <p className="text-sm sm:text-base text-gray-600">افضل الأسهم ماليا بناء علي القيمة معدل الربحية</p>
         </div>
 
         {data && data.user.allowedStocks ===true?  
@@ -149,28 +150,28 @@ const {data} = useSession()
                       
                       <div className="w-full grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 items-center">
                         <div>
-                          <span className="text-xs sm:text-sm text-gray-500">الرمز:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">الرمز: <Link href="/pricing"><Lock className="size-4" /></Link></span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
                             <p className="text-sm sm:text-base font-medium text-gray-700">XXX</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-xs sm:text-sm text-gray-500">السعر الحالي:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">السعر الحالي: <Link href="/pricing"><Lock className="size-4" /></Link></span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
                             <p className="text-sm sm:text-base font-medium text-gray-700">XX.XX</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-xs sm:text-sm text-gray-500">القيمة العادلة:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">القيمة العادلة: <Link href="/pricing"><Lock className="size-4" /></Link></span>
                           <div className={`blur-sm transition-all duration-300 cursor-pointer`}>
                             <p className="text-sm sm:text-base font-medium text-gray-700">XX.XX</p>
                           </div>
                         </div>
                         
                         <div>
-                          <span className="text-xs sm:text-sm text-gray-500">الفرق:</span>
+                          <span className="text-xs sm:text-sm text-gray-500">الفرق: <Link href="/pricing"><Lock className="size-4" /></Link></span>
                           <p className="blur-sm text-sm sm:text-base font-medium text-gray-700">
                             {(stock.price! - stock.fairValue!).toFixed(2)}
                           </p>

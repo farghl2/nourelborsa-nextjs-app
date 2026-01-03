@@ -76,7 +76,7 @@ const NourAi = () => {
   };
 
   const timeframeOptions = [
-    { value: 'مضارب', label: 'مضارب', icon: Clock, description: '15 دقيقة', color: 'text-orange-600' },
+    { value: 'مضارب', label: 'مضارب', icon: Clock, description: '30 دقيقة', color: 'text-orange-600' },
     { value: 'مدى قصير', label: 'مدى قصير', icon: TrendingUp, description: 'ساعة واحدة', color: 'text-blue-600' },
     { value: 'مدى متوسط', label: 'مدى متوسط', icon: BarChart3, description: 'يومي', color: 'text-green-600' },
   ];

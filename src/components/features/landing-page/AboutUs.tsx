@@ -5,14 +5,14 @@ import { ABOUTUS } from '@/lib/data/const-data';
 
 const AboutUs = () => {
   return (
-    <section className='py-12 px-2  rounded-lg'>
+    <section className=' px-2  rounded-lg'>
       <div className='max-w-6xl mx-auto '>
 
         <div className='text-center mb-8 sm:mb-16'>
           <h4 className='text-2xl sm:text-4xl text-black/90 font-bold'> من نحن</h4>
           <div className='h-0.5 w-[20%] bg-primary mx-auto mt-4 rounded-xl' />
         </div>
-        <div className=' flex  flex-col  gap-12 items-center lg:justify-between'>
+        <div className=' flex  flex-col   items-center lg:justify-between'>
           {/* <FadeInUP>
 
             <div

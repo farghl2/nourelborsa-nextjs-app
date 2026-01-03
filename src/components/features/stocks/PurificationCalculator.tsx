@@ -51,7 +51,7 @@ export default function PurificationCalculator({ triggerLabel = "احسب نسب
 
   const handelPurification2 =()=>{
     if (profit === undefined) return;
-    const calculation = (Number(profit) *purificationPercentage);
+    const calculation = (Number(profit) *(purificationPercentage/100));
     setResult2(calculation.toString());
   }
   return (

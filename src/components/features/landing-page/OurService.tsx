@@ -6,7 +6,7 @@ const OurService = () => {
   return (
     <section 
     dir='rtl'
-    className="py-12">
+    className="py-8">
         {/* <div className="h-0.5 w-full bg-secondary"/> */}
         <div className="max-w-6xl mx-auto">
             <div className=" flex items-center justify-between">
@@ -15,7 +15,7 @@ const OurService = () => {
                     <div className='h-0.5 w-[20%] bg-primary mx-auto mt-4 rounded-xl'/>
                 </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-wrap justify-center gap-2">
                     {OurServiceData.map((item, index) => (
                         <OurServiceItem icon={<item.icon/>} key={index} title={item.title} description={item.description}  index={index}/>
                     ))}

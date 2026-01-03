@@ -153,7 +153,7 @@ model Stock {
   totalAssets                      Float?    // إجمالي الأصول
   marketCapitalization             Float?    // القيمة السوقية
   recommendation                   Boolean   @default(false) // ننصح بالاحتفاظ
-  durationDays                     Int?       // المدة
+  durationDays                     Int?      @default(0) // المدة
   returnOnPrice                    Float?    // العائد على السعر
   fairValue                        Float?    // القيمة العادلة
   earningsPerShare                 Float?    // ربحية السهم
