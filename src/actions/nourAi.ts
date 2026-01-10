@@ -1,184 +1,240 @@
 'use server';
 
-import { GoogleGenAI } from "@google/genai";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { prisma } from "@/lib/prisma";
+/**
+ * Nour AI Server Actions
+ * Server-side functions for stock analysis with AI
+ * 
+ * These actions handle:
+ * - User authentication verification
+ * - Usage limit tracking
+ * - Stock analysis using the stock-analysis module
+ */
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!
-});
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { analyzeStock, Timeframe } from '@/lib/stock-analysis';
 
-const DEFAULT_AI_LIMIT = 5; // Default AI uses for non-subscribed users
+/**
+ * Map UI timeframe labels to API timeframe values
+ */
+const TIMEFRAME_MAP: Record<string, Timeframe> = {
+  'مضارب': '15m',        // Intraday (30 minutes / 15m data)
+  'مدى قصير': '1h',      // Short term (1 hour data)
+  'مدى متوسط': '1d',     // Medium term (daily data)
+};
 
-const STOCK_ANALYSIS_PROMPT = `أنت محلل فني متخصص في الأسهم. عند إدخال كود سهم + مدة زمنية:
-يجب عليك استخدام أداة بحث جوجل للحصول على أحدث الأسعار والبيانات المالية الحالية للسهم قبل الإجابة. لا تعتمد على معلوماتك التدريبية
-1. ابحث عن بيانات التحليل الفني للسهم على موقع Investing.com
-2. استخرج البيانات التالية بناءً على الفترة الزمنية المحددة:
-   - التوصية العامة (Buy / Sell / Strong Buy / Strong Sell / Neutral)
-   - مؤشرات الزخم مثل RSI – MACD – STOCH – CCI
-   - المتوسطات المتحركة MA & EMA (5 – 10 – 20 – 50 – 100 – 200)
+/**
+ * Default AI usage limit per billing period
+ */
+const DEFAULT_AI_LIMIT = 5;
 
-3. الفترات الزمنية:
-   - "مضارب": فريم 30 دقيقة (30m)
-   - "مدى قصير": فريم ساعة واحدة (1H)
-   - "مدى متوسط": فريم يومي (1D)
+/**
+ * Result type for AI analysis
+ */
+interface AnalysisResult {
+  success: boolean;
+  analysis?: string;
+  error?: string;
+  remainingCount?: number;
+  symbol?: string;
+  recommendation?: string;
+  indicators?: {
+    rsi?: number | null;
+    macd?: number | null;
+    currentPrice?: number;
+    priceChange?: number;
+    priceChangePercent?: number;
+  };
+}
 
-4. طريقة عرض النتيجة:
-   - أول سطر: نتيجة التوصية العامة
-   - ثم: المؤشرات الفنية وتحليل كل مؤشر
-   - ثم: المتوسطات المتحركة
-   - وأخيرًا: رأي مختصر مبني على مجموع المؤشرات
+/**
+ * Result type for usage info
+ */
+interface UsageInfoResult {
+  success: boolean;
+  remainingCount?: number;
+  totalLimit?: number;
+  error?: string;
+}
 
-⚠️ مهم جداً:
-- لا تذكر اسم أي موقع أو مصدر في ردك
-- لا تقل "بناءً على بيانات من..." أو أي عبارة مشابهة
-- قدم التحليل كأنه من خبرتك الخاصة مباشرة
-- لو السهم غير موجود، اطلب من المستخدم كتابة الكود الصحيح`;
-
-// Helper to get user's AI limit based on subscription plan
+/**
+ * Get the AI limit for a user based on their active subscription
+ */
 async function getUserAILimit(userId: string): Promise<number> {
-  // Get active subscription with plan details
-  const activeSubscription = await prisma.subscription.findFirst({
+  // Find user's active subscription with plan
+  const subscription = await prisma.subscription.findFirst({
     where: {
       userId,
       status: 'ACTIVE',
-      endDate: { gt: new Date() }
     },
     include: {
       plan: {
         select: { aiLimit: true }
       }
+    },
+    orderBy: {
+      startDate: 'desc'
     }
   });
-
-  // Return plan's aiLimit or default (5 for non-subscribed)
-  return activeSubscription?.plan?.aiLimit ?? DEFAULT_AI_LIMIT;
+  
+  return subscription?.plan?.aiLimit ?? DEFAULT_AI_LIMIT;
 }
 
-// Get user's remaining AI usage
-export async function getAIUsageInfo() {
+/**
+ * Get AI usage information for the current user
+ * @returns Usage count and limit information
+ */
+export async function getAIUsageInfo(): Promise<UsageInfoResult> {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return { success: false, error: 'يجب تسجيل الدخول أولاً' };
+    
+    if (!session?.user) {
+      return { success: false, error: 'يجب تسجيل الدخول' };
     }
-
+    
     const userId = (session.user as any).id;
-
+    if (!userId) {
+      return { success: false, error: 'يجب تسجيل الدخول' };
+    }
+    
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { aiUsageCount: true }
+      select: { 
+        id: true,
+        aiUsageCount: true,
+      },
     });
-
+    
     if (!user) {
       return { success: false, error: 'المستخدم غير موجود' };
     }
-
-    // Get user's AI limit from their subscription plan
-    const aiLimit = await getUserAILimit(userId);
-    const usedCount = user.aiUsageCount || 0;
+    
+    const aiLimit = await getUserAILimit(user.id);
+    const usedCount = user.aiUsageCount ?? 0;
     const remainingCount = Math.max(0, aiLimit - usedCount);
-
+    
     return {
       success: true,
-      usedCount,
       remainingCount,
-      limit: aiLimit
+      totalLimit: aiLimit,
     };
   } catch (error) {
-    console.error('Error getting AI usage info:', error);
-    return { success: false, error: 'فشل في جلب معلومات الاستخدام' };
+    console.error('[Nour AI] Error getting usage info:', error);
+    return { success: false, error: 'حدث خطأ في الخادم' };
   }
 }
 
-export async function analyzeStockWithAI(stockSymbol: string, timeframe: string) {
+/**
+ * Analyze a stock using AI
+ * 
+ * @param stockSymbol - Stock symbol or name (e.g., "FWRY", "Fawry", "فوري")
+ * @param timeframeLabel - UI timeframe label (e.g., "مضارب", "مدى قصير", "مدى متوسط")
+ * @returns Analysis result with AI report
+ */
+export async function analyzeStockWithAI(
+  stockSymbol: string,
+  timeframeLabel: string
+): Promise<AnalysisResult> {
   try {
-    // Check authentication
+    // 1. Verify authentication using NextAuth
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return { success: false, error: 'يجب تسجيل الدخول أولاً لاستخدام هذه الميزة' };
+    
+    if (!session?.user) {
+      return { success: false, error: 'يجب تسجيل الدخول لاستخدام هذه الميزة' };
     }
-
+    
     const userId = (session.user as any).id;
-
-    // Get user data
+    if (!userId) {
+      return { success: false, error: 'يجب تسجيل الدخول لاستخدام هذه الميزة' };
+    }
+    
+    // 2. Get user and check usage limits
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { aiUsageCount: true }
+      select: { 
+        id: true,
+        aiUsageCount: true,
+      },
     });
-
+    
     if (!user) {
       return { success: false, error: 'المستخدم غير موجود' };
     }
-
-    // Get user's AI limit from their subscription plan
-    const aiLimit = await getUserAILimit(userId);
-    const usedCount = user.aiUsageCount || 0;
+    
+    const aiLimit = await getUserAILimit(user.id);
+    const usedCount = user.aiUsageCount ?? 0;
     
     if (usedCount >= aiLimit) {
       return { 
         success: false, 
-        error: `لقد استنفدت جميع محاولاتك (${aiLimit} مرات). يرجى الترقية للحصول على المزيد.` 
+        error: 'لقد استنفدت جميع محاولاتك. قم بالترقية للحصول على المزيد.',
+        remainingCount: 0,
       };
     }
-
-    if (!stockSymbol) {
-      return { success: false, error: 'لم يتم إدخال رمز السهم' };
-    }
-
-    if (!timeframe) {
-      return { success: false, error: 'لم يتم تحديد الفترة الزمنية' };
-    }
-
-    const prompt = `${STOCK_ANALYSIS_PROMPT}\n\nالرجاء تحليل السهم التالي:\nالرمز: ${stockSymbol}\nالفترة الزمنية: ${timeframe}`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        tools: [{ googleSearch: {
-          // @ts-ignore - dynamicRetrievalConfig is valid but not in TypeScript definitions yet
-          dynamicRetrievalConfig: {
-            mode: "MODE_DYNAMIC",
-            dynamicThreshold: 0,
-          },
-        } }],  // Enable Google Search grounding for 2.5
-      }
-    });
-
-    let analysis = response.text || 'لا يوجد تحليل متاح';
     
-    // Remove any source citations that might appear
-    analysis = analysis
-      .replace(/\[.*?\]/g, '')  // Remove [1], [2], etc.
-      .replace(/المصدر:.*/gi, '')
-      .replace(/Source:.*/gi, '')
-      .replace(/\(\s*https?:\/\/[^\)]+\)/g, '')  // Remove URLs in parentheses
-      .replace(/https?:\/\/[^\s]+/g, '')  // Remove standalone URLs
-      .replace(/Investing\.com/gi, '')
-      .replace(/investing\.com/gi, '');
-
-    // Increment usage count after successful analysis
+    // 3. Map timeframe
+    const timeframe = TIMEFRAME_MAP[timeframeLabel] || '1d';
+    
+    console.log(`[Nour AI] Analyzing ${stockSymbol} with timeframe ${timeframe} for user ${user.id}`);
+    
+    // 4. Perform stock analysis
+    const result = await analyzeStock(stockSymbol, timeframe);
+    
+    if (!result.success) {
+      return { 
+        success: false, 
+        error: 'فشل في تحليل السهم. تأكد من صحة رمز السهم.',
+        remainingCount: aiLimit - usedCount,
+      };
+    }
+    
+    // 5. Increment usage count
     await prisma.user.update({
-      where: { id: userId },
-      data: { aiUsageCount: { increment: 1 } }
+      where: { id: user.id },
+      data: { aiUsageCount: { increment: 1 } },
     });
-
-    const newRemainingCount = aiLimit - (usedCount + 1);
-
+    
+    const newRemainingCount = aiLimit - usedCount - 1;
+    
+    // 6. Format the response
     return {
       success: true,
-      analysis: analysis.trim(),
+      analysis: result.aiReport.analysis,
+      recommendation: result.aiReport.recommendation,
+      symbol: result.symbol,
       remainingCount: newRemainingCount,
-      limit: aiLimit
+      indicators: {
+        rsi: result.indicators.rsi,
+        macd: result.indicators.macd.histogram,
+        currentPrice: result.indicators.currentPrice,
+        priceChange: result.indicators.priceChange,
+        priceChangePercent: result.indicators.priceChangePercent,
+      },
     };
-
+    
   } catch (error) {
-    console.error('Error analyzing stock:', error);
-    return {
-      success: false,
-      error: 'فشل في تحليل السهم. يرجى المحاولة مرة أخرى.'
+    console.error('[Nour AI] Analysis error:', error);
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('not found') || error.message.includes('Symbol')) {
+        return { 
+          success: false, 
+          error: `لم يتم العثور على السهم "${stockSymbol}". تأكد من صحة الرمز.` 
+        };
+      }
+      if (error.message.includes('data')) {
+        return { 
+          success: false, 
+          error: 'لا تتوفر بيانات كافية لهذا السهم.' 
+        };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.' 
     };
   }
 }
