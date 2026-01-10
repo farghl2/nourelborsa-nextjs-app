@@ -20,7 +20,7 @@ const STOCK_ANALYSIS_PROMPT = `أنت محلل فني متخصص في الأسه
    - المتوسطات المتحركة MA & EMA (5 – 10 – 20 – 50 – 100 – 200)
 
 3. الفترات الزمنية:
-   - "مضارب": فريم 15 دقيقة (15m)
+   - "مضارب": فريم 30 دقيقة (30m)
    - "مدى قصير": فريم ساعة واحدة (1H)
    - "مدى متوسط": فريم يومي (1D)
 
@@ -134,7 +134,7 @@ export async function analyzeStockWithAI(stockSymbol: string, timeframe: string)
     const prompt = `${STOCK_ANALYSIS_PROMPT}\n\nالرجاء تحليل السهم التالي:\nالرمز: ${stockSymbol}\nالفترة الزمنية: ${timeframe}`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite-preview-09-2025",
+      model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         tools: [{ googleSearch: {

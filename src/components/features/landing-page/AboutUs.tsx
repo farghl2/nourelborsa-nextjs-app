@@ -5,7 +5,7 @@ import { ABOUTUS } from '@/lib/data/const-data';
 
 const AboutUs = () => {
   return (
-    <section className=' px-2  rounded-lg'>
+    <section className='pt-16 px-2  rounded-lg'>
       <div className='max-w-6xl mx-auto '>
 
         <div className='text-center mb-8 sm:mb-16'>

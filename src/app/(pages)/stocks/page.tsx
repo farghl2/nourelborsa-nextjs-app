@@ -36,7 +36,7 @@ const {data} = useSession()
       fairValue: stock.fairValue!,
       percentage: ((stock.fairValue! - stock.price!) / stock.price!) * 100
     }))
-    .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending
+    .sort((a, b) => b.percentage - a.percentage); // Sort by percentage descending
 
     console.log(stocksWithPercentage[0])
   const filterStocks = stocks
@@ -47,7 +47,7 @@ const {data} = useSession()
       fairValue: stock.fairValue!,
       percentage: ((stock.price! - stock.fairValue!) / stock.price!) * 100
     }))
-    .sort((a, b) => a.percentage - b.percentage); // Sort by percentage descending
+    .sort((a, b) => b.percentage - a.percentage); // Sort by percentage descending
 
   const getPercentageColor = (percentage: number) => {
     if (percentage <0) return 'text-red-600 bg-red-50';

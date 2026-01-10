@@ -3,7 +3,10 @@ import React from 'react'
 
 const AboutUsPage = () => {
   return (
-  <AboutUs />
+    <div className='min-h-screen'>
+
+      <AboutUs />
+    </div>
   )
 }
 

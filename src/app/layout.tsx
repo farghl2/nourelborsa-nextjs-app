@@ -34,7 +34,7 @@ export default function RootLayout({
            
             <Header />
             {children}
-            <Script src="https://red3.paysky.io:3011/LB/js/Lightbox.js"
+            <Script src="https://cube.paysky.io:6006/js/LightBox.js"
                       strategy="afterInteractive"
             />
             <Toaster position="top-right"/>
